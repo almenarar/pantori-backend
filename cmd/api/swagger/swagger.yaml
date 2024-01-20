@@ -1,0 +1,123 @@
+definitions:
+  authcore.UserLogin:
+    properties:
+      password:
+        example: Qwerty
+        type: string
+      username:
+        example: john.foo
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  goodscore.DeleteGood:
+    properties:
+      id:
+        type: string
+    type: object
+  goodscore.PostGood:
+    properties:
+      buy_date:
+        type: string
+      category:
+        type: string
+      expire:
+        type: string
+      name:
+        type: string
+      workspace:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /goods:
+    delete:
+      consumes:
+      - application/json
+      description: Endpoint used to Delete a single good from database by ID
+      parameters:
+      - description: DeleteGood
+        in: body
+        name: DeleteGood
+        required: true
+        schema:
+          $ref: '#/definitions/goodscore.DeleteGood'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a good
+      tags:
+      - Goods
+    get:
+      description: Endpoint used to List all goods from a workspace in database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: List goods
+      tags:
+      - Goods
+    post:
+      consumes:
+      - application/json
+      description: Endpoint used to Create a single good in database
+      parameters:
+      - description: PostGood
+        in: body
+        name: PostGood
+        required: true
+        schema:
+          $ref: '#/definitions/goodscore.PostGood'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Register a good
+      tags:
+      - Goods
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Endpoint used to login API User
+      parameters:
+      - description: UserLogin
+        in: body
+        name: UserLogin
+        required: true
+        schema:
+          $ref: '#/definitions/authcore.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Login with username and password
+      tags:
+      - Auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
