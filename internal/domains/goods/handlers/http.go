@@ -41,6 +41,15 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 		return
 	}
 
+	username, exists := ctx.Get("username")
+	if exists && username == "dryrun" {
+		ctx.JSON(
+			http.StatusOK,
+			"Dry run execution ok",
+		)
+		return
+	}
+
 	exp, err := time.Parse("02/01/2006", payload.Expire)
 	if err != nil {
 		ctx.JSON(
@@ -96,6 +105,28 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 // @Router /goods [get]
 // @Security ApiKeyAuth
 func (net *Network) ListGoods(ctx *gin.Context) {
+	username, exists := ctx.Get("username")
+	if exists && username == "dryrun" {
+		ctx.JSON(
+			http.StatusOK,
+			[]core.Good{
+				{
+					Name:     "dryrun1",
+					Category: "categoryDR1",
+					BuyDate:  time.Time{},
+					Expire:   time.Time{},
+				},
+				{
+					Name:     "dryrun2",
+					Category: "categoryDR2",
+					BuyDate:  time.Time{},
+					Expire:   time.Time{},
+				},
+			},
+		)
+		return
+	}
+
 	output, err := net.svc.ListGoods()
 	if err != nil {
 		ctx.JSON(
@@ -131,6 +162,15 @@ func (net *Network) DeleteGood(ctx *gin.Context) {
 			gin.H{
 				"error": "some of the required fields are empty",
 			},
+		)
+		return
+	}
+
+	username, exists := ctx.Get("username")
+	if exists && username == "dryrun" {
+		ctx.JSON(
+			http.StatusOK,
+			"Dry run execution ok",
 		)
 		return
 	}
