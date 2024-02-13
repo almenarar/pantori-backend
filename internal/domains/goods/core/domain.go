@@ -1,21 +1,19 @@
 package core
 
-import "time"
-
 //-------------------------------------------------------------------------------
 // Principal
 //-------------------------------------------------------------------------------
 
 type Good struct {
-	ID        string    `gorm:"type:char(36);primaryKey" json:"id"`
-	Name      string    `json:"name"`
-	Category  string    `json:"category"`
-	ImageURL  string    `json:"image_url"`
-	Workspace string    `json:"workspace"`
-	Expire    time.Time `json:"expire"`
-	BuyDate   time.Time `json:"buy_date"`
-	CreatedAt time.Time `gorm:"default:current_timestamp(3)" json:"created_at"`
-	UpdatedAt time.Time `gorm:"default:current_timestamp(3)" json:"updated_at"`
+	ID        string `gorm:"type:char(36);primaryKey" json:"ID"`
+	Name      string `json:"Name"`
+	Category  string `json:"Category"`
+	ImageURL  string `json:"ImageURL"`
+	Workspace string `json:"Workspace"`
+	Expire    string `json:"Expire"`
+	BuyDate   string `json:"BuyDate"`
+	CreatedAt string `gorm:"default:current_timestamp(3)" json:"CreatedAt"`
+	UpdatedAt string `gorm:"default:current_timestamp(3)" json:"UpdatedAt"`
 }
 
 //-------------------------------------------------------------------------------

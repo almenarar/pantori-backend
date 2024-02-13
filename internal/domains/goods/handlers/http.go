@@ -4,7 +4,6 @@ import (
 	core "pantori/internal/domains/goods/core"
 
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,35 +49,13 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 		return
 	}
 
-	exp, err := time.Parse("02/01/2006", payload.Expire)
-	if err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "please provide date on format dd/MM/yyyy",
-			},
-		)
-		return
-	}
-
-	buyed, err := time.Parse("02/01/2006", payload.BuyDate)
-	if err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "please provide date on format dd/MM/yyyy",
-			},
-		)
-		return
-	}
-
 	if err := net.svc.AddGood(
 		core.Good{
 			Name:      payload.Name,
 			Category:  payload.Category,
 			Workspace: payload.Workspace,
-			Expire:    exp,
-			BuyDate:   buyed,
+			Expire:    payload.Expire,
+			BuyDate:   payload.BuyDate,
 		},
 	); err != nil {
 		ctx.JSON(
@@ -113,14 +90,14 @@ func (net *Network) ListGoods(ctx *gin.Context) {
 				{
 					Name:     "dryrun1",
 					Category: "categoryDR1",
-					BuyDate:  time.Time{},
-					Expire:   time.Time{},
+					BuyDate:  "2015/03/01",
+					Expire:   "2015/03/01",
 				},
 				{
 					Name:     "dryrun2",
 					Category: "categoryDR2",
-					BuyDate:  time.Time{},
-					Expire:   time.Time{},
+					BuyDate:  "2015/03/01",
+					Expire:   "2015/03/01",
 				},
 			},
 		)

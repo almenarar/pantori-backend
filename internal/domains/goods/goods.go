@@ -11,8 +11,10 @@ import (
 )
 
 func New() *hdl.Network {
-	conn := loadConnFromEnv()
-	db := infra.NewMySQL(conn)
+	//conn := loadConnFromEnv()
+	//db := infra.NewMySQL(conn)
+	table := loadDynamoDBParamsFromEnv()
+	db := infra.NewDynamoDB(table)
 
 	params := loadUnsplashParamsFromEnv()
 	image := infra.NewUnsplash(params)
@@ -22,14 +24,30 @@ func New() *hdl.Network {
 	return hdl.NewNetwork(service)
 }
 
-func loadConnFromEnv() string {
-	viper.BindEnv("mysql_conn", "MYSQL_CONN")
-	if viper.IsSet("mysql_conn") {
-		return viper.GetString("mysql_conn")
-	}
-	log.Panic().Stack().Err(errors.New("mysql_conn not set")).Msg("")
+//func loadConnFromEnv() string {
+//	viper.BindEnv("mysql_conn", "MYSQL_CONN")
+//	if viper.IsSet("mysql_conn") {
+//		return viper.GetString("mysql_conn")
+//	}
+//	log.Panic().Stack().Err(errors.New("mysql_conn not set")).Msg("")
+//
+//	return ""
+//}
 
-	return ""
+func loadDynamoDBParamsFromEnv() infra.DynamoParams {
+	var params infra.DynamoParams
+	if viper.IsSet("aws.goods_table") {
+		params.GoodsTable = viper.GetString("aws.goods_table")
+	} else {
+		log.Panic().Stack().Err(errors.New("aws.goods_table not set")).Msg("")
+	}
+
+	if viper.IsSet("aws.goods_table_index") {
+		params.GoodsTableIndex = viper.GetString("aws.goods_table_index")
+	} else {
+		log.Panic().Stack().Err(errors.New("aws.goods_table_index not set")).Msg("")
+	}
+	return params
 }
 
 func loadUnsplashParamsFromEnv() infra.UnsplashParams {
