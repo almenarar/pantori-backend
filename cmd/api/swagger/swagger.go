@@ -16,13 +16,13 @@ func (swg *swagger) Config(isDebugging bool) {
 	SwaggerInfo.Schemes = []string{"http"}
 
 	if isDebugging {
-		SwaggerInfo.Host = "localhost:8080"
+		SwaggerInfo.Host = "localhost:8800"
 	} else {
 		if os.Getenv("ENV") == "staging" {
-			SwaggerInfo.Host = "pantori.stg.io:8080"
+			SwaggerInfo.Host = "pantori.stg.io:8800"
 		}
 		if os.Getenv("ENV") == "production" {
-			SwaggerInfo.Host = "pantori.io:8080"
+			SwaggerInfo.Host = "pantori.io:8800"
 		}
 	}
 }

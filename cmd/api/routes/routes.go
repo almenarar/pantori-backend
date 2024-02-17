@@ -44,5 +44,5 @@ func (r *routes) Expose() {
 			goods.DELETE("", goodsRoutes.DeleteGood)
 		}
 	}
-	router.Run()
+	router.Run(":8800")
 }
