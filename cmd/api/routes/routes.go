@@ -40,6 +40,7 @@ func (r *routes) Expose() {
 		goods := api.Group("/goods", middlewares.AuthorizeRequest())
 		{
 			goods.POST("", goodsRoutes.CreateGood)
+			goods.PATCH("", goodsRoutes.EditGood)
 			goods.GET("", goodsRoutes.ListGoods)
 			goods.DELETE("", goodsRoutes.DeleteGood)
 		}

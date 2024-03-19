@@ -24,7 +24,7 @@ func NewNetwork(svc core.ServicePort) *Network {
 // @Tags Goods
 // @Accept json
 // @Produce json
-// @Param PostGood body goodscore.PostGood true "PostGood"
+// @Param PostGood body core.PostGood true "PostGood"
 // @Success 200 {string} ok
 // @Router /goods [post]
 // @Security ApiKeyAuth
@@ -56,6 +56,64 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 			Workspace: payload.Workspace,
 			Expire:    payload.Expire,
 			BuyDate:   payload.BuyDate,
+		},
+	); err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		"Done",
+	)
+}
+
+// PingExample godoc
+// @Summary Edit a good
+// @Description Endpoint used to Edit a single good in database
+// @Tags Goods
+// @Accept json
+// @Produce json
+// @Param PatchGood body core.PatchGood true "PatchGood"
+// @Success 200 {string} ok
+// @Router /goods [patch]
+// @Security ApiKeyAuth
+func (net *Network) EditGood(ctx *gin.Context) {
+	payload := core.PatchGood{}
+	if err := ctx.ShouldBindJSON(&payload); err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "some of the required fields are empty",
+			},
+		)
+		return
+	}
+
+	username, exists := ctx.Get("username")
+	if exists && username == "dryrun" {
+		ctx.JSON(
+			http.StatusOK,
+			"Dry run execution ok",
+		)
+		return
+	}
+
+	if err := net.svc.EditGood(
+		core.Good{
+			ID:        payload.ID,
+			Name:      payload.Name,
+			Category:  payload.Category,
+			ImageURL:  payload.ImageURL,
+			Workspace: payload.Workspace,
+			Expire:    payload.Expire,
+			BuyDate:   payload.BuyDate,
+			CreatedAt: payload.CreatedAt,
 		},
 	); err != nil {
 		ctx.JSON(
@@ -127,7 +185,7 @@ func (net *Network) ListGoods(ctx *gin.Context) {
 // @Tags Goods
 // @Accept json
 // @Produce json
-// @Param DeleteGood body goodscore.DeleteGood true "DeleteGood"
+// @Param DeleteGood body core.DeleteGood true "DeleteGood"
 // @Success 200 {string} ok
 // @Router /goods [delete]
 // @Security ApiKeyAuth

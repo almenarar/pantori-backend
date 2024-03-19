@@ -2,7 +2,6 @@ package goodsinfra
 
 import (
 	core "pantori/internal/domains/goods/core"
-
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -27,13 +26,34 @@ func NewDynamoDB(params DynamoParams) *dynamo {
 }
 
 func (dy *dynamo) CreateItem(good core.Good) error {
+	good.ID = uuid.New().String()
+	good.CreatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	err := dy.putItem(good)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dy *dynamo) EditItem(good core.Good) error {
+	good.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	err := dy.putItem(good)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (dy *dynamo) putItem(good core.Good) error {
 	client := dynamodb.New(createSession())
 	_, err := client.PutItem(
 		&dynamodb.PutItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
 			Item: map[string]*dynamodb.AttributeValue{
 				"ID": {
-					S: aws.String(uuid.New().String()),
+					S: aws.String(good.ID),
 				},
 				"Name": {
 					S: aws.String(good.Name),
@@ -54,7 +74,10 @@ func (dy *dynamo) CreateItem(good core.Good) error {
 					S: aws.String(good.BuyDate),
 				},
 				"CreatedAt": {
-					S: aws.String(time.Now().UTC().Format(time.RFC3339)),
+					S: aws.String(good.CreatedAt),
+				},
+				"UpdatedAt": {
+					S: aws.String(good.UpdatedAt),
 				},
 			},
 		},

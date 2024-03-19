@@ -23,6 +23,14 @@ func (svc *service) AddGood(good Good) error {
 	return nil
 }
 
+func (svc *service) EditGood(good Good) error {
+	err := svc.db.EditItem(good)
+	if err != nil {
+		return &ErrDbOpFailed{err}
+	}
+	return nil
+}
+
 func (svc *service) GetGood(good Good) (Good, error) {
 	result, err := svc.db.GetItemByID(good)
 	if err != nil {

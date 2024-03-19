@@ -28,6 +28,17 @@ type PostGood struct {
 	BuyDate   string `json:"buy_date" binding:"required"`
 }
 
+type PatchGood struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Category  string `json:"category"`
+	ImageURL  string `json:"image_url"`
+	Workspace string `json:"workspace"`
+	Expire    string `json:"expire"`
+	BuyDate   string `json:"buy_date"`
+	CreatedAt string `json:"created_at"`
+}
+
 type GetGood struct {
 	ID string `json:"id" binding:"required"`
 }

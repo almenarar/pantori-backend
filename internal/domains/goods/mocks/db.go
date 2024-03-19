@@ -7,6 +7,7 @@ import (
 type DatabaseMock struct {
 	ErrGet     error
 	ErrAdd     error
+	ErrEdit    error
 	ErrList    error
 	ErrDelete  error
 	Invocation *string
@@ -35,6 +36,14 @@ func (db *DatabaseMock) CreateItem(core.Good) error {
 	*db.Invocation = *db.Invocation + "-Add"
 	if db.ErrAdd != nil {
 		return db.ErrAdd
+	}
+	return nil
+}
+
+func (db *DatabaseMock) EditItem(core.Good) error {
+	*db.Invocation = *db.Invocation + "-Edit"
+	if db.ErrEdit != nil {
+		return db.ErrEdit
 	}
 	return nil
 }
