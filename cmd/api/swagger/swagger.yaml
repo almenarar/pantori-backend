@@ -11,12 +11,31 @@ definitions:
     - password
     - username
     type: object
-  goodscore.DeleteGood:
+  core.DeleteGood:
     properties:
       id:
         type: string
     type: object
-  goodscore.PostGood:
+  core.PatchGood:
+    properties:
+      buy_date:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      expire:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+      workspace:
+        type: string
+    type: object
+  core.PostGood:
     properties:
       buy_date:
         type: string
@@ -28,6 +47,12 @@ definitions:
         type: string
       workspace:
         type: string
+    required:
+    - buy_date
+    - category
+    - expire
+    - name
+    - workspace
     type: object
 info:
   contact: {}
@@ -43,7 +68,7 @@ paths:
         name: DeleteGood
         required: true
         schema:
-          $ref: '#/definitions/goodscore.DeleteGood'
+          $ref: '#/definitions/core.DeleteGood'
       produces:
       - application/json
       responses:
@@ -70,6 +95,29 @@ paths:
       summary: List goods
       tags:
       - Goods
+    patch:
+      consumes:
+      - application/json
+      description: Endpoint used to Edit a single good in database
+      parameters:
+      - description: PatchGood
+        in: body
+        name: PatchGood
+        required: true
+        schema:
+          $ref: '#/definitions/core.PatchGood'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Edit a good
+      tags:
+      - Goods
     post:
       consumes:
       - application/json
@@ -80,7 +128,7 @@ paths:
         name: PostGood
         required: true
         schema:
-          $ref: '#/definitions/goodscore.PostGood'
+          $ref: '#/definitions/core.PostGood'
       produces:
       - application/json
       responses:

@@ -63,7 +63,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/goodscore.PostGood"
+                            "$ref": "#/definitions/core.PostGood"
                         }
                     }
                 ],
@@ -100,7 +100,44 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/goodscore.DeleteGood"
+                            "$ref": "#/definitions/core.DeleteGood"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to Edit a single good in database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Goods"
+                ],
+                "summary": "Edit a good",
+                "parameters": [
+                    {
+                        "description": "PatchGood",
+                        "name": "PatchGood",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.PatchGood"
                         }
                     }
                 ],
@@ -167,7 +204,7 @@ const docTemplate = `{
                 }
             }
         },
-        "goodscore.DeleteGood": {
+        "core.DeleteGood": {
             "type": "object",
             "properties": {
                 "id": {
@@ -175,8 +212,44 @@ const docTemplate = `{
                 }
             }
         },
-        "goodscore.PostGood": {
+        "core.PatchGood": {
             "type": "object",
+            "properties": {
+                "buy_date": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "expire": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.PostGood": {
+            "type": "object",
+            "required": [
+                "buy_date",
+                "category",
+                "expire",
+                "name",
+                "workspace"
+            ],
             "properties": {
                 "buy_date": {
                     "type": "string"
