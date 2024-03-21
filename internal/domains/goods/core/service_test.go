@@ -62,6 +62,58 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+type EditCase struct {
+	Description        string
+	InputGood          core.Good
+	WhenDbErr          error
+	ExpectedError      error
+	ExpectedInvocation string
+}
+
+func TestEdit(t *testing.T) {
+	testCases := []EditCase{
+		{
+			Description:        "successfull edit",
+			InputGood:          core.Good{},
+			WhenDbErr:          nil,
+			ExpectedError:      nil,
+			ExpectedInvocation: "-Edit",
+		},
+		{
+			Description:        "db error",
+			InputGood:          core.Good{},
+			WhenDbErr:          errors.New("some error"),
+			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedInvocation: "-Edit",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Description, func(t *testing.T) {
+			assert := assert.New(t)
+			var invocationTrail string
+
+			svc := core.NewService(
+				&mocks.DatabaseMock{
+					ErrEdit:    testCase.WhenDbErr,
+					Invocation: &invocationTrail,
+				},
+				&mocks.ImageMock{
+					Invocation: &invocationTrail,
+				},
+			)
+
+			err := svc.EditGood(testCase.InputGood)
+
+			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
+			assert.IsType(testCase.ExpectedError, err)
+			if err != nil {
+				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			}
+		})
+	}
+}
+
 type GetCase struct {
 	Description        string
 	InputGood          core.Good
