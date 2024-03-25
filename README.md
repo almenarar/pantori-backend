@@ -37,13 +37,18 @@ cd pantori-backend
 
 ### Running the project locally
 
+Change mode.database value in *config.json* to "sql".
+Complete .env.example as follows:
+- JWT_KEY: any value you want;
+- UNSPLASH_KEY: if you have one, to enable custom images. [Click here](https://unsplash.com/documentation#creating-a-developer-account) to know more, it's free!
+
 Use the provided Makefile to build and run the containers:
 
 ```bash
 make run
 ```
 
-This command will start the Golang API and a MySQL database.
+This command will start the Golang API and a MySQL database. Default user is *foo* with pwd *bar*. This is a temporary way to manage users.
 
 ## Project Structure
 
