@@ -55,6 +55,10 @@ func (s *sql) GetAllItems() ([]core.Good, error) {
 	return goods, nil
 }
 
+func (s *sql) EditItem(good core.Good) error {
+	return errors.New("not implemented")
+}
+
 func (s *sql) DeleteItem(good core.Good) error {
 	result := s.db.Delete(good)
 	if result.Error != nil {

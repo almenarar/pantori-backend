@@ -1,4 +1,7 @@
 {
+    "mode": {
+        "database": "dynamo"
+    },
     "aws": {
         "goods_table": "pantori-goods",
         "goods_table_index": "WorkspaceIndex"

@@ -11,10 +11,15 @@ import (
 )
 
 func New() *hdl.Network {
-	//conn := loadConnFromEnv()
-	//db := infra.NewMySQL(conn)
-	table := loadDynamoDBParamsFromEnv()
-	db := infra.NewDynamoDB(table)
+	var db core.DatabasePort
+	if viper.IsSet("mode.database") &&
+		viper.GetString("mode.database") == "dynamo" {
+		table := loadDynamoDBParamsFromEnv()
+		db = infra.NewDynamoDB(table)
+	} else {
+		conn := loadConnFromEnv()
+		db = infra.NewMySQL(conn)
+	}
 
 	params := loadUnsplashParamsFromEnv()
 	image := infra.NewUnsplash(params)
@@ -24,15 +29,15 @@ func New() *hdl.Network {
 	return hdl.NewNetwork(service)
 }
 
-//func loadConnFromEnv() string {
-//	viper.BindEnv("mysql_conn", "MYSQL_CONN")
-//	if viper.IsSet("mysql_conn") {
-//		return viper.GetString("mysql_conn")
-//	}
-//	log.Panic().Stack().Err(errors.New("mysql_conn not set")).Msg("")
-//
-//	return ""
-//}
+func loadConnFromEnv() string {
+	viper.BindEnv("mysql_conn", "MYSQL_CONN")
+	if viper.IsSet("mysql_conn") {
+		return viper.GetString("mysql_conn")
+	}
+	log.Panic().Stack().Err(errors.New("mysql_conn not set")).Msg("")
+
+	return ""
+}
 
 func loadDynamoDBParamsFromEnv() infra.DynamoParams {
 	var params infra.DynamoParams
