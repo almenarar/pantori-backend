@@ -51,11 +51,11 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 
 	if err := net.svc.AddGood(
 		core.Good{
-			Name:      payload.Name,
-			Category:  payload.Category,
-			Workspace: payload.Workspace,
-			Expire:    payload.Expire,
-			BuyDate:   payload.BuyDate,
+			Name:       payload.Name,
+			Categories: payload.Categories,
+			Workspace:  payload.Workspace,
+			Expire:     payload.Expire,
+			BuyDate:    payload.BuyDate,
 		},
 	); err != nil {
 		ctx.JSON(
@@ -106,14 +106,14 @@ func (net *Network) EditGood(ctx *gin.Context) {
 
 	if err := net.svc.EditGood(
 		core.Good{
-			ID:        payload.ID,
-			Name:      payload.Name,
-			Category:  payload.Category,
-			ImageURL:  payload.ImageURL,
-			Workspace: payload.Workspace,
-			Expire:    payload.Expire,
-			BuyDate:   payload.BuyDate,
-			CreatedAt: payload.CreatedAt,
+			ID:         payload.ID,
+			Name:       payload.Name,
+			Categories: payload.Categories,
+			ImageURL:   payload.ImageURL,
+			Workspace:  payload.Workspace,
+			Expire:     payload.Expire,
+			BuyDate:    payload.BuyDate,
+			CreatedAt:  payload.CreatedAt,
 		},
 	); err != nil {
 		ctx.JSON(
@@ -132,6 +132,48 @@ func (net *Network) EditGood(ctx *gin.Context) {
 }
 
 // PingExample godoc
+// @Summary Get good
+// @Description Endpoint used to get one good from a workspace in database
+// @Tags Goods
+// @Param id path string true "Item ID"
+// @Produce json
+// @Success 200 {string} arn
+// @Router /goods/{id} [get]
+// @Security ApiKeyAuth
+func (net *Network) GetGood(ctx *gin.Context) {
+	username, exists := ctx.Get("username")
+	if exists && username == "dryrun" {
+		ctx.JSON(
+			http.StatusOK,
+			core.Good{
+
+				Name:       "dryrun1",
+				Categories: []string{"categoryDR1", "categoryDR2"},
+				BuyDate:    "2015/03/01",
+				Expire:     "2015/03/01",
+			},
+		)
+		return
+	}
+
+	output, err := net.svc.GetGood(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		output,
+	)
+}
+
+// PingExample godoc
 // @Summary List goods
 // @Description Endpoint used to List all goods from a workspace in database
 // @Tags Goods
@@ -146,16 +188,16 @@ func (net *Network) ListGoods(ctx *gin.Context) {
 			http.StatusOK,
 			[]core.Good{
 				{
-					Name:     "dryrun1",
-					Category: "categoryDR1",
-					BuyDate:  "2015/03/01",
-					Expire:   "2015/03/01",
+					Name:       "dryrun1",
+					Categories: []string{"categoryDR1", "categoryDR2"},
+					BuyDate:    "2015/03/01",
+					Expire:     "2015/03/01",
 				},
 				{
-					Name:     "dryrun2",
-					Category: "categoryDR2",
-					BuyDate:  "2015/03/01",
-					Expire:   "2015/03/01",
+					Name:       "dryrun2",
+					Categories: []string{"categoryDR3", "categoryDR4"},
+					BuyDate:    "2015/03/01",
+					Expire:     "2015/03/01",
 				},
 			},
 		)

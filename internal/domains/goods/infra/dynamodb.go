@@ -49,38 +49,16 @@ func (dy *dynamo) EditItem(good core.Good) error {
 
 func (dy *dynamo) putItem(good core.Good) error {
 	client := dynamodb.New(createSession())
-	_, err := client.PutItem(
+
+	av, err := dynamodbattribute.MarshalMap(good)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.PutItem(
 		&dynamodb.PutItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
-			Item: map[string]*dynamodb.AttributeValue{
-				"ID": {
-					S: aws.String(good.ID),
-				},
-				"Name": {
-					S: aws.String(good.Name),
-				},
-				"Category": {
-					S: aws.String(good.Category),
-				},
-				"ImageURL": {
-					S: aws.String(good.ImageURL),
-				},
-				"Workspace": {
-					S: aws.String(good.Workspace),
-				},
-				"Expire": {
-					S: aws.String(good.Expire),
-				},
-				"BuyDate": {
-					S: aws.String(good.BuyDate),
-				},
-				"CreatedAt": {
-					S: aws.String(good.CreatedAt),
-				},
-				"UpdatedAt": {
-					S: aws.String(good.UpdatedAt),
-				},
-			},
+			Item:      av,
 		},
 	)
 	if err != nil {
@@ -89,14 +67,14 @@ func (dy *dynamo) putItem(good core.Good) error {
 	return nil
 }
 
-func (dy *dynamo) GetItemByID(good core.Good) (core.Good, error) {
+func (dy *dynamo) GetItemByID(id string) (core.Good, error) {
 	client := dynamodb.New(createSession())
 	output, err := client.GetItem(
 		&dynamodb.GetItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
 			Key: map[string]*dynamodb.AttributeValue{
 				"ID": {
-					S: aws.String(dy.params.GoodsTable),
+					S: aws.String(id),
 				},
 				"Workspace": {
 					S: aws.String("main"),
@@ -107,6 +85,8 @@ func (dy *dynamo) GetItemByID(good core.Good) (core.Good, error) {
 	if err != nil {
 		return core.Good{}, err
 	}
+
+	var good core.Good
 	if len(output.Item) == 0 {
 		return core.Good{}, nil
 	} else {
