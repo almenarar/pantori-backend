@@ -42,6 +42,7 @@ func (r *routes) Expose() {
 			goods.POST("", goodsRoutes.CreateGood)
 			goods.PATCH("", goodsRoutes.EditGood)
 			goods.GET("", goodsRoutes.ListGoods)
+			goods.GET("/:id", goodsRoutes.GetGood)
 			goods.DELETE("", goodsRoutes.DeleteGood)
 		}
 	}

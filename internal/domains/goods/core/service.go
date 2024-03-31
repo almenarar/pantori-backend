@@ -31,8 +31,8 @@ func (svc *service) EditGood(good Good) error {
 	return nil
 }
 
-func (svc *service) GetGood(good Good) (Good, error) {
-	result, err := svc.db.GetItemByID(good)
+func (svc *service) GetGood(id string) (Good, error) {
+	result, err := svc.db.GetItemByID(id)
 	if err != nil {
 		return Good{}, &ErrDbOpFailed{err}
 	}

@@ -20,8 +20,10 @@ definitions:
     properties:
       buy_date:
         type: string
-      category:
-        type: string
+      categories:
+        items:
+          type: string
+        type: array
       created_at:
         type: string
       expire:
@@ -39,8 +41,10 @@ definitions:
     properties:
       buy_date:
         type: string
-      category:
-        type: string
+      categories:
+        items:
+          type: string
+        type: array
       expire:
         type: string
       name:
@@ -49,7 +53,7 @@ definitions:
         type: string
     required:
     - buy_date
-    - category
+    - categories
     - expire
     - name
     - workspace
@@ -139,6 +143,27 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Register a good
+      tags:
+      - Goods
+  /goods/{id}:
+    get:
+      description: Endpoint used to get one good from a workspace in database
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get good
       tags:
       - Goods
   /login:

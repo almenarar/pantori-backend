@@ -156,7 +156,7 @@ func TestGet(t *testing.T) {
 				},
 			)
 
-			out, err := svc.GetGood(testCase.InputGood)
+			out, err := svc.GetGood(testCase.InputGood.ID)
 
 			assert.Equal(testCase.ExpectedReturn, out)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)

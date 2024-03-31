@@ -151,6 +151,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/goods/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to get one good from a workspace in database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Goods"
+                ],
+                "summary": "Get good",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Endpoint used to login API User",
@@ -218,8 +252,11 @@ const docTemplate = `{
                 "buy_date": {
                     "type": "string"
                 },
-                "category": {
-                    "type": "string"
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "created_at": {
                     "type": "string"
@@ -245,7 +282,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "buy_date",
-                "category",
+                "categories",
                 "expire",
                 "name",
                 "workspace"
@@ -254,8 +291,11 @@ const docTemplate = `{
                 "buy_date": {
                     "type": "string"
                 },
-                "category": {
-                    "type": "string"
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "expire": {
                     "type": "string"
