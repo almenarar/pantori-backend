@@ -3,6 +3,7 @@ package routes
 import (
 	"pantori/cmd/api/middlewares"
 	"pantori/internal/auth"
+	"pantori/internal/domains/categories"
 	"pantori/internal/domains/goods"
 
 	"net/http"
@@ -22,6 +23,7 @@ func (r *routes) Expose() {
 	middlewares := middlewares.New()
 	auth := auth.New()
 	goodsRoutes := goods.New()
+	categoriesRoutes := categories.New()
 
 	router := gin.New()
 
@@ -44,6 +46,15 @@ func (r *routes) Expose() {
 			goods.GET("", goodsRoutes.ListGoods)
 			goods.GET("/:id", goodsRoutes.GetGood)
 			goods.DELETE("", goodsRoutes.DeleteGood)
+		}
+
+		categories := api.Group("/categories", middlewares.AuthorizeRequest())
+		{
+			categories.GET("/:workspace", categoriesRoutes.ListCategories)
+			categories.POST("", categoriesRoutes.CreateCategory)
+			categories.POST("/default", categoriesRoutes.CreateDefaultCategories)
+			categories.DELETE("", categoriesRoutes.DeleteCategory)
+			categories.PATCH("", categoriesRoutes.EditCategory)
 		}
 	}
 	router.Run(":8800")

@@ -21,28 +21,28 @@ type Good struct {
 //-------------------------------------------------------------------------------
 
 type PostGood struct {
-	Name       string   `json:"name" binding:"required"`
-	Categories []string `json:"categories" binding:"required"`
-	Workspace  string   `json:"workspace" binding:"required"`
-	Expire     string   `json:"expire" binding:"required"`
-	BuyDate    string   `json:"buy_date" binding:"required"`
+	Name       string   `json:"Name" binding:"required"`
+	Categories []string `json:"Categories" binding:"required"`
+	Workspace  string   `json:"Workspace" binding:"required"`
+	Expire     string   `json:"Expire" binding:"required"`
+	BuyDate    string   `json:"BuyDate" binding:"required"`
 }
 
 type PatchGood struct {
-	ID         string   `json:"id"`
-	Name       string   `json:"name"`
-	Categories []string `json:"categories"`
-	ImageURL   string   `json:"image_url"`
-	Workspace  string   `json:"workspace"`
-	Expire     string   `json:"expire"`
-	BuyDate    string   `json:"buy_date"`
-	CreatedAt  string   `json:"created_at"`
+	ID         string   `json:"ID"`
+	Name       string   `json:"Name"`
+	Categories []string `json:"Categories"`
+	ImageURL   string   `json:"Image_url"`
+	Workspace  string   `json:"Workspace"`
+	Expire     string   `json:"Expire"`
+	BuyDate    string   `json:"BuyDate"`
+	CreatedAt  string   `json:"CreatedAt"`
 }
 
 type GetGood struct {
-	ID string `json:"id" binding:"required"`
+	ID string `json:"ID" binding:"required"`
 }
 
 type DeleteGood struct {
-	ID string `json:"id"`
+	ID string `json:"ID"`
 }

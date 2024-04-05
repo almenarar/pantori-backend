@@ -11,56 +11,217 @@ definitions:
     - password
     - username
     type: object
+  core.DeleteCategory:
+    properties:
+      ID:
+        type: string
+      Workspace:
+        type: string
+    required:
+    - ID
+    - Workspace
+    type: object
   core.DeleteGood:
     properties:
-      id:
+      ID:
         type: string
+    type: object
+  core.PatchCategory:
+    properties:
+      Color:
+        type: string
+      ID:
+        type: string
+      Name:
+        type: string
+      Workspace:
+        type: string
+    required:
+    - Color
+    - ID
+    - Name
+    - Workspace
     type: object
   core.PatchGood:
     properties:
-      buy_date:
+      BuyDate:
         type: string
-      categories:
+      Categories:
         items:
           type: string
         type: array
-      created_at:
+      CreatedAt:
         type: string
-      expire:
+      Expire:
         type: string
-      id:
+      ID:
         type: string
-      image_url:
+      Image_url:
         type: string
-      name:
+      Name:
         type: string
-      workspace:
+      Workspace:
         type: string
+    type: object
+  core.PostCategory:
+    properties:
+      Color:
+        type: string
+      Name:
+        type: string
+      Workspace:
+        type: string
+    required:
+    - Color
+    - Name
+    - Workspace
+    type: object
+  core.PostDefaultCategories:
+    properties:
+      Workspace:
+        type: string
+    required:
+    - Workspace
     type: object
   core.PostGood:
     properties:
-      buy_date:
+      BuyDate:
         type: string
-      categories:
+      Categories:
         items:
           type: string
         type: array
-      expire:
+      Expire:
         type: string
-      name:
+      Name:
         type: string
-      workspace:
+      Workspace:
         type: string
     required:
-    - buy_date
-    - categories
-    - expire
-    - name
-    - workspace
+    - BuyDate
+    - Categories
+    - Expire
+    - Name
+    - Workspace
     type: object
 info:
   contact: {}
 paths:
+  /categories:
+    delete:
+      consumes:
+      - application/json
+      description: Endpoint used to Delete a single category in database
+      parameters:
+      - description: DeleteCategory
+        in: body
+        name: DeleteCategory
+        required: true
+        schema:
+          $ref: '#/definitions/core.DeleteCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a category
+      tags:
+      - Categories
+    patch:
+      consumes:
+      - application/json
+      description: Endpoint used to Edit a single category in database
+      parameters:
+      - description: PatchCategory
+        in: body
+        name: PatchCategory
+        required: true
+        schema:
+          $ref: '#/definitions/core.PatchCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Edit a category
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      description: Endpoint used to Create a single category in database
+      parameters:
+      - description: PostCategory
+        in: body
+        name: PostCategory
+        required: true
+        schema:
+          $ref: '#/definitions/core.PostCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Register a category
+      tags:
+      - Categories
+  /categories/{workspace}:
+    get:
+      description: Endpoint used to List all categories from a workspace in database
+      parameters:
+      - description: Workspace
+        in: path
+        name: workspace
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: List categories
+      tags:
+      - Categories
+  /categories/default:
+    post:
+      consumes:
+      - application/json
+      description: Endpoint used to Create default categories in database
+      parameters:
+      - description: PostDefaultCategories
+        in: body
+        name: PostDefaultCategories
+        required: true
+        schema:
+          $ref: '#/definitions/core.PostDefaultCategories'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Register default categories for a workspace
+      tags:
+      - Categories
   /goods:
     delete:
       consumes:

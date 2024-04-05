@@ -15,6 +15,192 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/categories": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to Create a single category in database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Register a category",
+                "parameters": [
+                    {
+                        "description": "PostCategory",
+                        "name": "PostCategory",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.PostCategory"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to Delete a single category in database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Delete a category",
+                "parameters": [
+                    {
+                        "description": "DeleteCategory",
+                        "name": "DeleteCategory",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.DeleteCategory"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to Edit a single category in database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Edit a category",
+                "parameters": [
+                    {
+                        "description": "PatchCategory",
+                        "name": "PatchCategory",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.PatchCategory"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/default": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to Create default categories in database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Register default categories for a workspace",
+                "parameters": [
+                    {
+                        "description": "PostDefaultCategories",
+                        "name": "PostDefaultCategories",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.PostDefaultCategories"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/categories/{workspace}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to List all categories from a workspace in database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "List categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace",
+                        "name": "workspace",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/goods": {
             "get": {
                 "security": [
@@ -238,10 +424,48 @@ const docTemplate = `{
                 }
             }
         },
+        "core.DeleteCategory": {
+            "type": "object",
+            "required": [
+                "ID",
+                "Workspace"
+            ],
+            "properties": {
+                "ID": {
+                    "type": "string"
+                },
+                "Workspace": {
+                    "type": "string"
+                }
+            }
+        },
         "core.DeleteGood": {
             "type": "object",
             "properties": {
-                "id": {
+                "ID": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.PatchCategory": {
+            "type": "object",
+            "required": [
+                "Color",
+                "ID",
+                "Name",
+                "Workspace"
+            ],
+            "properties": {
+                "Color": {
+                    "type": "string"
+                },
+                "ID": {
+                    "type": "string"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "Workspace": {
                     "type": "string"
                 }
             }
@@ -249,31 +473,61 @@ const docTemplate = `{
         "core.PatchGood": {
             "type": "object",
             "properties": {
-                "buy_date": {
+                "BuyDate": {
                     "type": "string"
                 },
-                "categories": {
+                "Categories": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "created_at": {
+                "CreatedAt": {
                     "type": "string"
                 },
-                "expire": {
+                "Expire": {
                     "type": "string"
                 },
-                "id": {
+                "ID": {
                     "type": "string"
                 },
-                "image_url": {
+                "Image_url": {
                     "type": "string"
                 },
-                "name": {
+                "Name": {
                     "type": "string"
                 },
-                "workspace": {
+                "Workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.PostCategory": {
+            "type": "object",
+            "required": [
+                "Color",
+                "Name",
+                "Workspace"
+            ],
+            "properties": {
+                "Color": {
+                    "type": "string"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "Workspace": {
+                    "type": "string"
+                }
+            }
+        },
+        "core.PostDefaultCategories": {
+            "type": "object",
+            "required": [
+                "Workspace"
+            ],
+            "properties": {
+                "Workspace": {
                     "type": "string"
                 }
             }
@@ -281,29 +535,29 @@ const docTemplate = `{
         "core.PostGood": {
             "type": "object",
             "required": [
-                "buy_date",
-                "categories",
-                "expire",
-                "name",
-                "workspace"
+                "BuyDate",
+                "Categories",
+                "Expire",
+                "Name",
+                "Workspace"
             ],
             "properties": {
-                "buy_date": {
+                "BuyDate": {
                     "type": "string"
                 },
-                "categories": {
+                "Categories": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "expire": {
+                "Expire": {
                     "type": "string"
                 },
-                "name": {
+                "Name": {
                     "type": "string"
                 },
-                "workspace": {
+                "Workspace": {
                     "type": "string"
                 }
             }

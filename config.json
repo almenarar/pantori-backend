@@ -4,7 +4,9 @@
     },
     "aws": {
         "goods_table": "pantori-goods",
-        "goods_table_index": "WorkspaceIndex"
+        "goods_table_index": "WorkspaceIndex",
+        "categories_table": "pantori-categories",
+        "categories_table_index": "WorkspaceIndex"
     },
     "unsplash": {
         "base_url": "https://api.unsplash.com/search/photos"
