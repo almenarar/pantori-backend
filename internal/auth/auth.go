@@ -1,16 +1,16 @@
 package auth
 
 import (
-	core "pantori/internal/auth/core"
-	hdl "pantori/internal/auth/handlers"
-	infra "pantori/internal/auth/infra"
+	"pantori/internal/auth/core"
+	"pantori/internal/auth/handlers"
+	"pantori/internal/auth/infra"
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
-func New() *hdl.Network {
+func New() *handlers.Network {
 	jwt_key := loadKeyFromEnv()
 
 	crypto := infra.NewCryptography(jwt_key)
@@ -18,7 +18,7 @@ func New() *hdl.Network {
 
 	service := core.NewService(crypto, db)
 
-	return hdl.NewNetwork(service)
+	return handlers.NewNetwork(service)
 }
 
 // it is duplicated from middlewares.go

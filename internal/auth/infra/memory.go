@@ -1,4 +1,4 @@
-package authinfra
+package infra
 
 import (
 	core "pantori/internal/auth/core"

@@ -1,4 +1,4 @@
-package authcore
+package core
 
 type ServicePort interface {
 	Authenticate(User) (string, error)

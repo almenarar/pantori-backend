@@ -1,7 +1,7 @@
-package authhdl
+package handlers
 
 import (
-	core "pantori/internal/auth/core"
+	"pantori/internal/auth/core"
 
 	"net/http"
 

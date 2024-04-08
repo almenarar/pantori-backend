@@ -1,8 +1,8 @@
-package authcore_test
+package core_test
 
 import (
-	core "pantori/internal/auth/core"
-	mocks "pantori/internal/auth/mocks"
+	"pantori/internal/auth/core"
+	"pantori/internal/auth/mocks"
 
 	"errors"
 	"testing"

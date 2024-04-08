@@ -1,4 +1,4 @@
-package authhdl
+package handlers
 
 import (
 	core "pantori/internal/auth/core"

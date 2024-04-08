@@ -1,4 +1,4 @@
-package authcore
+package core
 
 import (
 	"github.com/pkg/errors"

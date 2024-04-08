@@ -1,4 +1,4 @@
-package authmocks
+package mocks
 
 import core "pantori/internal/auth/core"
 

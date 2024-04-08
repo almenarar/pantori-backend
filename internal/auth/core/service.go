@@ -1,4 +1,4 @@
-package authcore
+package core
 
 type service struct {
 	db     DatabasePort
