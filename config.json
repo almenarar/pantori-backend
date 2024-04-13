@@ -3,6 +3,7 @@
         "database": "dynamo"
     },
     "aws": {
+        "user_table": "pantori-users",
         "goods_table": "pantori-goods",
         "goods_table_index": "WorkspaceIndex",
         "categories_table": "pantori-categories",

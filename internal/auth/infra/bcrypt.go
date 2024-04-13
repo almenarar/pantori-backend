@@ -3,43 +3,51 @@ package infra
 import (
 	core "pantori/internal/auth/core"
 
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type cryptography struct {
-	jwt_key string
+	jwtKey string
 }
 
-func NewCryptography(key string) *cryptography {
+func NewCryptography(jwtKey string) *cryptography {
 	return &cryptography{
-		jwt_key: key,
+		jwtKey: jwtKey,
 	}
+}
+
+func (c *cryptography) EncryptPassword(pwd string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
 
 func (c *cryptography) CheckPassword(stored, given string) error {
-	if stored == given {
-		return nil
+	err := bcrypt.CompareHashAndPassword([]byte(stored), []byte(given))
+	if err != nil {
+		return err
 	}
-	return errors.New("oops")
+	return nil
 }
 
 func (c *cryptography) GenerateToken(user core.User) (string, error) {
-	claims := jwt.StandardClaims{
-		Id:        uuid.New().String(),
-		Audience:  "foo",
-		Issuer:    user.Username,
-		IssuedAt:  time.Now().Unix(),
-		ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
-		NotBefore: time.Now().Unix(),
-		Subject:   fmt.Sprintf("%s-api-access", "foo"),
+	claims := jwt.MapClaims{
+		"iss":       "pantori",
+		"id":        uuid.New().String(),
+		"sub":       user.Username,
+		"exp":       time.Now().Add(time.Hour).Unix(),
+		"iat":       time.Now().Unix(),
+		"nbf":       time.Now().Unix(),
+		"workspace": user.Workspace,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(c.jwt_key))
+	signedToken, err := token.SignedString([]byte(c.jwtKey))
 	if err != nil {
 		return "", err
 	}

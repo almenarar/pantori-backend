@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"pantori/cmd/api/middlewares"
+	middleware "pantori/cmd/api/middlewares"
 	"pantori/internal/auth"
 	"pantori/internal/domains/categories"
 	"pantori/internal/domains/goods"
@@ -20,8 +20,8 @@ func New() *routes {
 }
 
 func (r *routes) Expose() {
-	middlewares := middlewares.New()
-	auth := auth.New()
+	middlewares := middleware.New()
+	authRoutes := auth.New()
 	goodsRoutes := goods.New()
 	categoriesRoutes := categories.New()
 
@@ -37,9 +37,15 @@ func (r *routes) Expose() {
 
 	api := router.Group("/api")
 	{
-		api.POST("/login", auth.Login)
+		api.POST("/login", authRoutes.Login)
+		auth := api.Group("/auth", middlewares.AuthorizeRequest(middleware.AuthorizeInput{AdminRequired: true}))
+		{
+			auth.POST("/user", authRoutes.CreateUser)
+			auth.DELETE("/user", authRoutes.DeleteUser)
+			auth.GET("/user", authRoutes.ListUsers)
+		}
 
-		goods := api.Group("/goods", middlewares.AuthorizeRequest())
+		goods := api.Group("/goods", middlewares.AuthorizeRequest(middleware.AuthorizeInput{AdminRequired: false}))
 		{
 			goods.POST("", goodsRoutes.CreateGood)
 			goods.PATCH("", goodsRoutes.EditGood)
@@ -48,7 +54,7 @@ func (r *routes) Expose() {
 			goods.DELETE("", goodsRoutes.DeleteGood)
 		}
 
-		categories := api.Group("/categories", middlewares.AuthorizeRequest())
+		categories := api.Group("/categories", middlewares.AuthorizeRequest(middleware.AuthorizeInput{AdminRequired: false}))
 		{
 			categories.GET("/:workspace", categoriesRoutes.ListCategories)
 			categories.POST("", categoriesRoutes.CreateCategory)

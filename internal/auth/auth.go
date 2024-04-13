@@ -11,14 +11,27 @@ import (
 )
 
 func New() *handlers.Network {
-	jwt_key := loadKeyFromEnv()
+	jwt_key := LoadKeyFromEnv()
+	table := LoadDynamoDBParamsFromEnv()
 
 	crypto := infra.NewCryptography(jwt_key)
-	db := infra.NewMemory()
+	utils := infra.NewUtils()
+	db := infra.NewDynamoDB(table)
 
-	service := core.NewService(crypto, db)
+	service := core.NewService(crypto, db, utils)
 
 	return handlers.NewNetwork(service)
+}
+
+func LoadDynamoDBParamsFromEnv() string {
+	var table string
+	if viper.IsSet("aws.user_table") {
+		table = viper.GetString("aws.user_table")
+	} else {
+		log.Panic().Stack().Err(errors.New("aws.user_table not set")).Msg("")
+	}
+
+	return table
 }
 
 // it is duplicated from middlewares.go
@@ -28,7 +41,7 @@ func New() *handlers.Network {
 // but should routes receive a super parameter store and distribute?
 // should main create everything and pass them ready to routes?
 // i choose to make each module call what they need and keep related things close
-func loadKeyFromEnv() string {
+func LoadKeyFromEnv() string {
 	viper.BindEnv("jwt_key", "JWT_KEY")
 	if viper.IsSet("jwt_key") {
 		return viper.GetString("jwt_key")

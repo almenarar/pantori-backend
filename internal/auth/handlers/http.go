@@ -25,7 +25,7 @@ func NewNetwork(svc core.ServicePort) *Network {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param UserLogin body authcore.UserLogin true "UserLogin"
+// @Param UserLogin body core.UserLogin true "UserLogin"
 // @Success 200 {string} jwt
 // @Router /login [post]
 func (net *Network) Login(ctx *gin.Context) {
@@ -61,5 +61,124 @@ func (net *Network) Login(ctx *gin.Context) {
 	ctx.JSON(
 		http.StatusOK,
 		token,
+	)
+}
+
+// PingExample godoc
+// @Summary Create new user
+// @Description Endpoint used to create new API user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param CreateUser body core.CreateUser true "CreateUser"
+// @Success 200 {string} jwt
+// @Router /auth/user [post]
+// @Security ApiKeyAuth
+func (net *Network) CreateUser(ctx *gin.Context) {
+	user := core.CreateUser{}
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		log.Error().Stack().Msg(err.Error())
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "some required fields are empty",
+			},
+		)
+		return
+	}
+
+	err := net.svc.CreateUser(
+		core.User{
+			Username:      user.Username,
+			GivenPassword: user.Password,
+			Workspace:     user.Workspace,
+			Email:         user.Email,
+		},
+	)
+	if err != nil {
+		statusCode := defineHTTPStatus(err)
+		ctx.JSON(
+			statusCode,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		"done!",
+	)
+}
+
+// PingExample godoc
+// @Summary Delete a user
+// @Description Endpoint used to delete a API user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param DeleteUser body core.DeleteUser true "DeleteUser"
+// @Success 200 {string} jwt
+// @Router /auth/user [delete]
+// @Security ApiKeyAuth
+func (net *Network) DeleteUser(ctx *gin.Context) {
+	user := core.DeleteUser{}
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		log.Error().Stack().Msg(err.Error())
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "some required fields are empty",
+			},
+		)
+		return
+	}
+
+	err := net.svc.DeleteUser(
+		core.User{
+			Username: user.Username,
+		},
+	)
+	if err != nil {
+		statusCode := defineHTTPStatus(err)
+		ctx.JSON(
+			statusCode,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		"done!",
+	)
+}
+
+// PingExample godoc
+// @Summary List users
+// @Description Endpoint used to List all users in database
+// @Tags Auth
+// @Produce json
+// @Success 200 {string} arn
+// @Router /auth/user [get]
+// @Security ApiKeyAuth
+func (net *Network) ListUsers(ctx *gin.Context) {
+	output, err := net.svc.ListUsers()
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		output,
 	)
 }
