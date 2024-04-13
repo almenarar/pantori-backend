@@ -15,3 +15,27 @@ func (svc *Service) Authenticate(user core.User) (string, error) {
 	}
 	return "token", svc.CustomFunc(user)
 }
+
+func (svc *Service) CreateUser(core.User) error {
+	svc.Invoked = true
+	if svc.Err != nil {
+		return svc.Err
+	}
+	return nil
+}
+
+func (svc *Service) DeleteUser(core.User) error {
+	svc.Invoked = true
+	if svc.Err != nil {
+		return svc.Err
+	}
+	return nil
+}
+
+func (svc *Service) ListUsers() ([]core.User, error) {
+	svc.Invoked = true
+	if svc.Err != nil {
+		return []core.User{}, svc.Err
+	}
+	return []core.User{{Username: "john"}}, nil
+}

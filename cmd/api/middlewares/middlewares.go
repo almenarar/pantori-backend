@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"fmt"
@@ -15,6 +15,10 @@ import (
 
 type middlewares struct {
 	jwtKey string
+}
+
+type AuthorizeInput struct {
+	AdminRequired bool
 }
 
 func New() *middlewares {
@@ -46,7 +50,7 @@ func (mdd *middlewares) SetCORS() gin.HandlerFunc {
 	}
 }
 
-func (mdd *middlewares) AuthorizeRequest() gin.HandlerFunc {
+func (mdd *middlewares) AuthorizeRequest(input AuthorizeInput) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		authValue := strings.Split(authHeader, " ")
@@ -75,13 +79,25 @@ func (mdd *middlewares) AuthorizeRequest() gin.HandlerFunc {
 			return
 		}
 
-		username, exists := claims["iss"].(string)
+		username, exists := claims["sub"].(string)
 		if !exists {
 			log.Warn().Msg("unidentified user")
 			return
 		}
 
+		workspace, exists := claims["workspace"].(string)
+		if !exists {
+			log.Warn().Msg("unidentified workspace")
+			return
+		}
+
+		if input.AdminRequired && workspace != "admin" {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
 		ctx.Set("username", username)
+		ctx.Set("workspace", workspace)
 	}
 }
 

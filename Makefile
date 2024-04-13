@@ -3,7 +3,11 @@ DOCKER_TAG = $(shell git rev-parse --short HEAD)
 IMAGE_NAME = pantori-backend
 
 unit:
-	go test -coverprofile coverage.out ./internal/auth/core ./internal/auth/handlers ./internal/domains/goods/core ./internal/domains/categories/core
+	go test -coverprofile coverage.out ./internal/auth/core ./internal/domains/goods/core  ./internal/domains/categories/core 
+	go tool cover -func=coverage.out
+
+handlers:
+	go test -coverprofile coverage.out ./internal/auth/handlers ./internal/domains/goods/handlers ./internal/domains/categories/handlers
 	go tool cover -func=coverage.out
 
 build:

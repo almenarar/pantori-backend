@@ -3,9 +3,10 @@ package mocks
 import core "pantori/internal/auth/core"
 
 type CryptoMock struct {
-	ErrCheckPwd error
-	ErrGenToken error
-	Invocation  *string
+	ErrCheckPwd   error
+	ErrGenToken   error
+	ErrEncryptPwd error
+	Invocation    *string
 }
 
 func (cm *CryptoMock) CheckPassword(stored, given string) error {
@@ -22,4 +23,12 @@ func (cm *CryptoMock) GenerateToken(core.User) (string, error) {
 		return "", cm.ErrGenToken
 	}
 	return "token", nil
+}
+
+func (cm *CryptoMock) EncryptPassword(password string) (string, error) {
+	*cm.Invocation = *cm.Invocation + "-EncryptPwd"
+	if cm.ErrEncryptPwd != nil {
+		return "", cm.ErrEncryptPwd
+	}
+	return "solarbean", nil
 }
