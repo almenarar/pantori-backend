@@ -15,6 +15,100 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/user": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to List all users in database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "List users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Endpoint used to create new API user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Create new user",
+                "parameters": [
+                    {
+                        "description": "CreateUser",
+                        "name": "CreateUser",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.CreateUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to delete a API user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "description": "DeleteUser",
+                        "name": "DeleteUser",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/core.DeleteUser"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "post": {
                 "security": [
@@ -146,17 +240,6 @@ const docTemplate = `{
                     "Categories"
                 ],
                 "summary": "Register default categories for a workspace",
-                "parameters": [
-                    {
-                        "description": "PostDefaultCategories",
-                        "name": "PostDefaultCategories",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/core.PostDefaultCategories"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -391,7 +474,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/authcore.UserLogin"
+                            "$ref": "#/definitions/core.UserLogin"
                         }
                     }
                 ],
@@ -407,43 +490,63 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "authcore.UserLogin": {
+        "core.CreateUser": {
             "type": "object",
             "required": [
+                "email",
                 "password",
                 "username"
             ],
             "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.foo@mail.com"
+                },
                 "password": {
                     "type": "string",
-                    "example": "Qwerty"
+                    "example": "qwerty"
                 },
                 "username": {
                     "type": "string",
                     "example": "john.foo"
+                },
+                "workspace": {
+                    "type": "string",
+                    "example": "principal"
                 }
             }
         },
         "core.DeleteCategory": {
             "type": "object",
             "required": [
-                "ID",
-                "Workspace"
+                "ID"
             ],
             "properties": {
                 "ID": {
-                    "type": "string"
-                },
-                "Workspace": {
                     "type": "string"
                 }
             }
         },
         "core.DeleteGood": {
             "type": "object",
+            "required": [
+                "ID"
+            ],
             "properties": {
                 "ID": {
                     "type": "string"
+                }
+            }
+        },
+        "core.DeleteUser": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "john.foo"
                 }
             }
         },
@@ -452,8 +555,7 @@ const docTemplate = `{
             "required": [
                 "Color",
                 "ID",
-                "Name",
-                "Workspace"
+                "Name"
             ],
             "properties": {
                 "Color": {
@@ -464,14 +566,21 @@ const docTemplate = `{
                 },
                 "Name": {
                     "type": "string"
-                },
-                "Workspace": {
-                    "type": "string"
                 }
             }
         },
         "core.PatchGood": {
             "type": "object",
+            "required": [
+                "BuyDate",
+                "Categories",
+                "CreatedAt",
+                "Expire",
+                "ID",
+                "ImageURL",
+                "Name",
+                "Workspace"
+            ],
             "properties": {
                 "BuyDate": {
                     "type": "string"
@@ -491,7 +600,7 @@ const docTemplate = `{
                 "ID": {
                     "type": "string"
                 },
-                "Image_url": {
+                "ImageURL": {
                     "type": "string"
                 },
                 "Name": {
@@ -506,28 +615,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "Color",
-                "Name",
-                "Workspace"
+                "Name"
             ],
             "properties": {
                 "Color": {
                     "type": "string"
                 },
                 "Name": {
-                    "type": "string"
-                },
-                "Workspace": {
-                    "type": "string"
-                }
-            }
-        },
-        "core.PostDefaultCategories": {
-            "type": "object",
-            "required": [
-                "Workspace"
-            ],
-            "properties": {
-                "Workspace": {
                     "type": "string"
                 }
             }
@@ -559,6 +653,23 @@ const docTemplate = `{
                 },
                 "Workspace": {
                     "type": "string"
+                }
+            }
+        },
+        "core.UserLogin": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "Qwerty"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john.foo"
                 }
             }
         }

@@ -1,13 +1,20 @@
 definitions:
-  authcore.UserLogin:
+  core.CreateUser:
     properties:
+      email:
+        example: john.foo@mail.com
+        type: string
       password:
-        example: Qwerty
+        example: qwerty
         type: string
       username:
         example: john.foo
         type: string
+      workspace:
+        example: principal
+        type: string
     required:
+    - email
     - password
     - username
     type: object
@@ -15,16 +22,23 @@ definitions:
     properties:
       ID:
         type: string
-      Workspace:
-        type: string
     required:
     - ID
-    - Workspace
     type: object
   core.DeleteGood:
     properties:
       ID:
         type: string
+    required:
+    - ID
+    type: object
+  core.DeleteUser:
+    properties:
+      username:
+        example: john.foo
+        type: string
+    required:
+    - username
     type: object
   core.PatchCategory:
     properties:
@@ -34,13 +48,10 @@ definitions:
         type: string
       Name:
         type: string
-      Workspace:
-        type: string
     required:
     - Color
     - ID
     - Name
-    - Workspace
     type: object
   core.PatchGood:
     properties:
@@ -56,12 +67,21 @@ definitions:
         type: string
       ID:
         type: string
-      Image_url:
+      ImageURL:
         type: string
       Name:
         type: string
       Workspace:
         type: string
+    required:
+    - BuyDate
+    - Categories
+    - CreatedAt
+    - Expire
+    - ID
+    - ImageURL
+    - Name
+    - Workspace
     type: object
   core.PostCategory:
     properties:
@@ -69,19 +89,9 @@ definitions:
         type: string
       Name:
         type: string
-      Workspace:
-        type: string
     required:
     - Color
     - Name
-    - Workspace
-    type: object
-  core.PostDefaultCategories:
-    properties:
-      Workspace:
-        type: string
-    required:
-    - Workspace
     type: object
   core.PostGood:
     properties:
@@ -104,9 +114,80 @@ definitions:
     - Name
     - Workspace
     type: object
+  core.UserLogin:
+    properties:
+      password:
+        example: Qwerty
+        type: string
+      username:
+        example: john.foo
+        type: string
+    required:
+    - password
+    - username
+    type: object
 info:
   contact: {}
 paths:
+  /auth/user:
+    delete:
+      consumes:
+      - application/json
+      description: Endpoint used to delete a API user
+      parameters:
+      - description: DeleteUser
+        in: body
+        name: DeleteUser
+        required: true
+        schema:
+          $ref: '#/definitions/core.DeleteUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a user
+      tags:
+      - Auth
+    get:
+      description: Endpoint used to List all users in database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: List users
+      tags:
+      - Auth
+    post:
+      consumes:
+      - application/json
+      description: Endpoint used to create new API user
+      parameters:
+      - description: CreateUser
+        in: body
+        name: CreateUser
+        required: true
+        schema:
+          $ref: '#/definitions/core.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Create new user
+      tags:
+      - Auth
   /categories:
     delete:
       consumes:
@@ -203,13 +284,6 @@ paths:
       consumes:
       - application/json
       description: Endpoint used to Create default categories in database
-      parameters:
-      - description: PostDefaultCategories
-        in: body
-        name: PostDefaultCategories
-        required: true
-        schema:
-          $ref: '#/definitions/core.PostDefaultCategories'
       produces:
       - application/json
       responses:
@@ -338,7 +412,7 @@ paths:
         name: UserLogin
         required: true
         schema:
-          $ref: '#/definitions/authcore.UserLogin'
+          $ref: '#/definitions/core.UserLogin'
       produces:
       - application/json
       responses:
