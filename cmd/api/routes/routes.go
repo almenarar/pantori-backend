@@ -56,7 +56,7 @@ func (r *routes) Expose() {
 
 		categories := api.Group("/categories", middlewares.AuthorizeRequest(middleware.AuthorizeInput{AdminRequired: false}))
 		{
-			categories.GET("/:workspace", categoriesRoutes.ListCategories)
+			categories.GET("", categoriesRoutes.ListCategories)
 			categories.POST("", categoriesRoutes.CreateCategory)
 			categories.POST("/default", categoriesRoutes.CreateDefaultCategories)
 			categories.DELETE("", categoriesRoutes.DeleteCategory)

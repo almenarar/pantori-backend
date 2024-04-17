@@ -11,7 +11,7 @@ func Swagger() *swagger {
 func (swg *swagger) Config(isDebugging bool) {
 	SwaggerInfo.Title = "Pantori API"
 	SwaggerInfo.Description = "Serve commands related to Pantori App: auth, workspaces, items and more."
-	SwaggerInfo.Version = "1.0"
+	SwaggerInfo.Version = "1.1.0"
 	SwaggerInfo.BasePath = "/api"
 	SwaggerInfo.Schemes = []string{"http"}
 

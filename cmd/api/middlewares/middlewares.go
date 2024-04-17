@@ -131,6 +131,11 @@ func (mdd *middlewares) Logger() gin.HandlerFunc {
 			userID = "unknown"
 		}
 
+		workspace, exists := c.Get("workspace")
+		if !exists {
+			workspace = "unknown"
+		}
+
 		// Log response
 		end := time.Now()
 		latency := end.Sub(start)
@@ -140,6 +145,7 @@ func (mdd *middlewares) Logger() gin.HandlerFunc {
 			Str("method", method).
 			Str("path", path).
 			Str("username", fmt.Sprint(userID)).
+			Str("workspace", fmt.Sprint(workspace)).
 			Str("client_ip", clientIP).
 			Int("status", statusCode).
 			Time("start", start).

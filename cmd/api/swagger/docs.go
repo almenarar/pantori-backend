@@ -40,6 +40,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Endpoint used to create new API user",
                 "consumes": [
                     "application/json"
@@ -110,6 +115,29 @@ const docTemplate = `{
             }
         },
         "/categories": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to List all categories from a workspace in database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "List categories",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -240,40 +268,6 @@ const docTemplate = `{
                     "Categories"
                 ],
                 "summary": "Register default categories for a workspace",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/categories/{workspace}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Endpoint used to List all categories from a workspace in database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Categories"
-                ],
-                "summary": "List categories",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace",
-                        "name": "workspace",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -578,8 +572,7 @@ const docTemplate = `{
                 "Expire",
                 "ID",
                 "ImageURL",
-                "Name",
-                "Workspace"
+                "Name"
             ],
             "properties": {
                 "BuyDate": {
@@ -605,9 +598,6 @@ const docTemplate = `{
                 },
                 "Name": {
                     "type": "string"
-                },
-                "Workspace": {
-                    "type": "string"
                 }
             }
         },
@@ -632,8 +622,7 @@ const docTemplate = `{
                 "BuyDate",
                 "Categories",
                 "Expire",
-                "Name",
-                "Workspace"
+                "Name"
             ],
             "properties": {
                 "BuyDate": {
@@ -649,9 +638,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "Name": {
-                    "type": "string"
-                },
-                "Workspace": {
                     "type": "string"
                 }
             }

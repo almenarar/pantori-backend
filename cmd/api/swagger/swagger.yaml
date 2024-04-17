@@ -71,8 +71,6 @@ definitions:
         type: string
       Name:
         type: string
-      Workspace:
-        type: string
     required:
     - BuyDate
     - Categories
@@ -81,7 +79,6 @@ definitions:
     - ID
     - ImageURL
     - Name
-    - Workspace
     type: object
   core.PostCategory:
     properties:
@@ -105,14 +102,11 @@ definitions:
         type: string
       Name:
         type: string
-      Workspace:
-        type: string
     required:
     - BuyDate
     - Categories
     - Expire
     - Name
-    - Workspace
     type: object
   core.UserLogin:
     properties:
@@ -185,6 +179,8 @@ paths:
           description: OK
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create new user
       tags:
       - Auth
@@ -210,6 +206,20 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Delete a category
+      tags:
+      - Categories
+    get:
+      description: Endpoint used to List all categories from a workspace in database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: List categories
       tags:
       - Categories
     patch:
@@ -256,27 +266,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Register a category
-      tags:
-      - Categories
-  /categories/{workspace}:
-    get:
-      description: Endpoint used to List all categories from a workspace in database
-      parameters:
-      - description: Workspace
-        in: path
-        name: workspace
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: List categories
       tags:
       - Categories
   /categories/default:

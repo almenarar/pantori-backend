@@ -122,13 +122,27 @@ cd ./cmd/api && ~/go/bin/swag init --parseInternal -d .,../../internal -o swagge
 
 ## Testing
 
-This project only has unit tests for now. We understand that all code inside **core/** directories should be unit tested since it don't have dependencies and it's pure business logic. 
-I consider integration tests to be too costly to make at the moment. 
+We understand that all code inside **core/** directories should be unit tested since it don't have dependencies and it's pure business logic.
+In turn, code inside **infra/** directories are the actual code that hold dependencies, then it should have integration tests.
+
+I consider **handlers/** directories a gray area between integration and unit. They are cheap and don't use external sistems like unit tests, but uses external libraries, frameworks, etc, like integration tests. Some of them create http servers and requests. That's why I keep this tests separated in their own category. 
+
 Functional tests to production will be written in future releases.
+
 You can run unit tests with:
 
 ```bash
 make unit
+```
+You can run handlers tests with:
+
+```bash
+make handlers
+```
+Note: for integration tests, you need the proper infrastructure to be up and the correct credentials. You can run integration tests with:
+
+```bash
+make integration
 ```
 
 You can find test files in the same directory of the code they are testing. Test files has a **_test.go** prefix. All tests are based in [Table Driven Tests](https://www.google.com/search?q=table+driven+tests).
@@ -147,14 +161,9 @@ This section outlines the current version of the Goods Expiry Management System 
 
 ### Current Version
 
-The current version of the project is `v1.0.0`. You can check the [release page](https://github.com/almenarar/pantori-backend/releases) for more details about each release.
+The current version of the project is `v1.1.0`. You can check the [release page](https://github.com/almenarar/pantori-backend/releases) for more details about each release.
 
 ### Roadmap
-
-#### Version `v1.1.0` (Next Release)
-
-- [ ] **Feature:** Multiple workspaces, allowing diferent users to manage their goods separately.
-- [ ] **Enhancement:** Removing user data from enviroment variables and storing it in database with proper CRUD.
 
 #### Version `v1.2.0` (Future Release)
 
