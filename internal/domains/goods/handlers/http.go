@@ -1,7 +1,8 @@
-package goodshdl
+package handlers
 
 import (
-	core "pantori/internal/domains/goods/core"
+	"fmt"
+	"pantori/internal/domains/goods/core"
 
 	"net/http"
 
@@ -49,11 +50,12 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 		return
 	}
 
+	workspace, _ := ctx.Get("workspace")
 	if err := net.svc.AddGood(
 		core.Good{
 			Name:       payload.Name,
 			Categories: payload.Categories,
-			Workspace:  payload.Workspace,
+			Workspace:  fmt.Sprint(workspace),
 			Expire:     payload.Expire,
 			BuyDate:    payload.BuyDate,
 		},
@@ -104,13 +106,14 @@ func (net *Network) EditGood(ctx *gin.Context) {
 		return
 	}
 
+	workspace, _ := ctx.Get("workspace")
 	if err := net.svc.EditGood(
 		core.Good{
 			ID:         payload.ID,
 			Name:       payload.Name,
 			Categories: payload.Categories,
 			ImageURL:   payload.ImageURL,
-			Workspace:  payload.Workspace,
+			Workspace:  fmt.Sprint(workspace),
 			Expire:     payload.Expire,
 			BuyDate:    payload.BuyDate,
 			CreatedAt:  payload.CreatedAt,
@@ -156,7 +159,13 @@ func (net *Network) GetGood(ctx *gin.Context) {
 		return
 	}
 
-	output, err := net.svc.GetGood(ctx.Param("id"))
+	workspace, _ := ctx.Get("workspace")
+	output, err := net.svc.GetGood(
+		core.Good{
+			ID:        ctx.Param("id"),
+			Workspace: fmt.Sprint(workspace),
+		},
+	)
 	if err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
@@ -204,7 +213,8 @@ func (net *Network) ListGoods(ctx *gin.Context) {
 		return
 	}
 
-	output, err := net.svc.ListGoods()
+	workspace, _ := ctx.Get("workspace")
+	output, err := net.svc.ListGoods(fmt.Sprint(workspace))
 	if err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
@@ -252,9 +262,11 @@ func (net *Network) DeleteGood(ctx *gin.Context) {
 		return
 	}
 
+	workspace, _ := ctx.Get("workspace")
 	if err := net.svc.DeleteGood(
 		core.Good{
-			ID: payload.ID,
+			ID:        payload.ID,
+			Workspace: fmt.Sprint(workspace),
 		},
 	); err != nil {
 		ctx.JSON(

@@ -67,17 +67,17 @@ func (dy *dynamo) putItem(good core.Good) error {
 	return nil
 }
 
-func (dy *dynamo) GetItemByID(id string) (core.Good, error) {
+func (dy *dynamo) GetItemByID(good core.Good) (core.Good, error) {
 	client := dynamodb.New(createSession())
 	output, err := client.GetItem(
 		&dynamodb.GetItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
 			Key: map[string]*dynamodb.AttributeValue{
 				"ID": {
-					S: aws.String(id),
+					S: aws.String(good.ID),
 				},
 				"Workspace": {
-					S: aws.String("main"),
+					S: aws.String(good.Workspace),
 				},
 			},
 		},
@@ -86,19 +86,19 @@ func (dy *dynamo) GetItemByID(id string) (core.Good, error) {
 		return core.Good{}, err
 	}
 
-	var good core.Good
+	var foundGood core.Good
 	if len(output.Item) == 0 {
 		return core.Good{}, nil
 	} else {
-		err = dynamodbattribute.UnmarshalMap(output.Item, &good)
+		err = dynamodbattribute.UnmarshalMap(output.Item, &foundGood)
 		if err != nil {
 			return good, err
 		}
 	}
-	return good, nil
+	return foundGood, nil
 }
 
-func (dy *dynamo) GetAllItems() ([]core.Good, error) {
+func (dy *dynamo) GetAllItems(workspace string) ([]core.Good, error) {
 	client := dynamodb.New(createSession())
 	result, err := client.Query(
 		&dynamodb.QueryInput{
@@ -106,7 +106,7 @@ func (dy *dynamo) GetAllItems() ([]core.Good, error) {
 			IndexName:              &dy.params.GoodsTableIndex,
 			KeyConditionExpression: aws.String("Workspace = :Workspace"),
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-				":Workspace": {S: aws.String("main")},
+				":Workspace": {S: aws.String(workspace)},
 			},
 		},
 	)
@@ -136,7 +136,7 @@ func (dy *dynamo) DeleteItem(good core.Good) error {
 					S: aws.String(good.ID),
 				},
 				"Workspace": {
-					S: aws.String("main"),
+					S: aws.String(good.Workspace),
 				},
 			},
 		},

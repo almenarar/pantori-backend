@@ -37,16 +37,16 @@ func (s *sql) CreateItem(good core.Good) error {
 	return nil
 }
 
-func (s *sql) GetItemByID(id string) (core.Good, error) {
+func (s *sql) GetItemByID(good core.Good) (core.Good, error) {
 	var item core.Good
-	result := s.db.First(&item, id)
+	result := s.db.First(&item, good.ID)
 	if result.Error != nil {
 		return core.Good{}, errors.Wrap(result.Error, "")
 	}
 	return item, nil
 }
 
-func (s *sql) GetAllItems() ([]core.Good, error) {
+func (s *sql) GetAllItems(string) ([]core.Good, error) {
 	var goods []core.Good
 	result := s.db.Find(&goods)
 	if result.Error != nil {

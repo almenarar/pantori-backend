@@ -22,21 +22,19 @@ type Good struct {
 
 type PostGood struct {
 	Name       string   `json:"Name" binding:"required"`
-	Categories []string `json:"Categories" binding:"required"`
-	Workspace  string   `json:"Workspace" binding:"required"`
+	Categories []string `json:"Categories"`
 	Expire     string   `json:"Expire" binding:"required"`
 	BuyDate    string   `json:"BuyDate" binding:"required"`
 }
 
 type PatchGood struct {
-	ID         string   `json:"ID"`
-	Name       string   `json:"Name"`
-	Categories []string `json:"Categories"`
-	ImageURL   string   `json:"Image_url"`
-	Workspace  string   `json:"Workspace"`
-	Expire     string   `json:"Expire"`
-	BuyDate    string   `json:"BuyDate"`
-	CreatedAt  string   `json:"CreatedAt"`
+	ID         string   `json:"ID" binding:"required"`
+	Name       string   `json:"Name" binding:"required"`
+	Categories []string `json:"Categories" binding:"required"`
+	ImageURL   string   `json:"ImageURL" binding:"required"`
+	Expire     string   `json:"Expire" binding:"required"`
+	BuyDate    string   `json:"BuyDate" binding:"required"`
+	CreatedAt  string   `json:"CreatedAt" binding:"required"`
 }
 
 type GetGood struct {
@@ -44,5 +42,5 @@ type GetGood struct {
 }
 
 type DeleteGood struct {
-	ID string `json:"ID"`
+	ID string `json:"ID" binding:"required"`
 }

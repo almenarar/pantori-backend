@@ -31,16 +31,16 @@ func (svc *service) EditGood(good Good) error {
 	return nil
 }
 
-func (svc *service) GetGood(id string) (Good, error) {
-	result, err := svc.db.GetItemByID(id)
+func (svc *service) GetGood(good Good) (Good, error) {
+	result, err := svc.db.GetItemByID(good)
 	if err != nil {
 		return Good{}, &ErrDbOpFailed{err}
 	}
 	return result, nil
 }
 
-func (svc *service) ListGoods() ([]Good, error) {
-	result, err := svc.db.GetAllItems()
+func (svc *service) ListGoods(workspace string) ([]Good, error) {
+	result, err := svc.db.GetAllItems(workspace)
 	if err != nil {
 		return []Good{}, &ErrDbOpFailed{err}
 	}
