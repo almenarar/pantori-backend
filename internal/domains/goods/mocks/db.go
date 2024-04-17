@@ -13,7 +13,7 @@ type DatabaseMock struct {
 	Invocation *string
 }
 
-func (db *DatabaseMock) GetItemByID(string) (core.Good, error) {
+func (db *DatabaseMock) GetItemByID(core.Good) (core.Good, error) {
 	*db.Invocation = *db.Invocation + "-Get"
 	if db.ErrGet != nil {
 		return core.Good{}, db.ErrGet
@@ -21,7 +21,7 @@ func (db *DatabaseMock) GetItemByID(string) (core.Good, error) {
 	return core.Good{ID: "foo"}, nil
 }
 
-func (db *DatabaseMock) GetAllItems() ([]core.Good, error) {
+func (db *DatabaseMock) GetAllItems(string) ([]core.Good, error) {
 	*db.Invocation = *db.Invocation + "-List"
 	if db.ErrList != nil {
 		return []core.Good{}, db.ErrList

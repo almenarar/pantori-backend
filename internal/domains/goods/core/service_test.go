@@ -156,7 +156,7 @@ func TestGet(t *testing.T) {
 				},
 			)
 
-			out, err := svc.GetGood(testCase.InputGood.ID)
+			out, err := svc.GetGood(testCase.InputGood)
 
 			assert.Equal(testCase.ExpectedReturn, out)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
@@ -170,6 +170,7 @@ func TestGet(t *testing.T) {
 
 type ListCase struct {
 	Description        string
+	InputGood          core.Good
 	WhenDbErr          error
 	ExpectedError      error
 	ExpectedReturn     []core.Good
@@ -212,7 +213,7 @@ func TestList(t *testing.T) {
 				},
 			)
 
-			out, err := svc.ListGoods()
+			out, err := svc.ListGoods(testCase.InputGood.Workspace)
 
 			assert.Equal(testCase.ExpectedReturn, out)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
