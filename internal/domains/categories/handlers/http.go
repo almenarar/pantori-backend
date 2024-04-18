@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+
 	"pantori/internal/domains/categories/core"
 
 	"github.com/gin-gonic/gin"
@@ -48,11 +50,12 @@ func (net *Network) CreateCategory(ctx *gin.Context) {
 		return
 	}
 
+	workspace, _ := ctx.Get("workspace")
 	if err := net.svc.CreateCategory(
 		core.Category{
 			Name:      payload.Name,
-			Workspace: payload.Workspace,
 			Color:     payload.Color,
+			Workspace: fmt.Sprint(workspace),
 		},
 	); err != nil {
 		ctx.JSON(
@@ -76,22 +79,10 @@ func (net *Network) CreateCategory(ctx *gin.Context) {
 // @Tags Categories
 // @Accept json
 // @Produce json
-// @Param PostDefaultCategories body core.PostDefaultCategories true "PostDefaultCategories"
 // @Success 200 {string} ok
 // @Router /categories/default [post]
 // @Security ApiKeyAuth
 func (net *Network) CreateDefaultCategories(ctx *gin.Context) {
-	payload := core.PostDefaultCategories{}
-	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
-		return
-	}
-
 	username, exists := ctx.Get("username")
 	if exists && username == "dryrun" {
 		ctx.JSON(
@@ -101,9 +92,8 @@ func (net *Network) CreateDefaultCategories(ctx *gin.Context) {
 		return
 	}
 
-	if err := net.svc.CreateDefaultCategories(
-		payload.Workspace,
-	); err != nil {
+	workspace, _ := ctx.Get("workspace")
+	if err := net.svc.CreateDefaultCategories(fmt.Sprint(workspace)); err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
@@ -150,10 +140,11 @@ func (net *Network) DeleteCategory(ctx *gin.Context) {
 		return
 	}
 
+	workspace, _ := ctx.Get("workspace")
 	if err := net.svc.DeleteCategory(
 		core.Category{
 			ID:        payload.ID,
-			Workspace: payload.Workspace,
+			Workspace: fmt.Sprint(workspace),
 		},
 	); err != nil {
 		ctx.JSON(
@@ -202,12 +193,13 @@ func (net *Network) EditCategory(ctx *gin.Context) {
 		return
 	}
 
+	workspace, _ := ctx.Get("workspace")
 	if err := net.svc.EditCategory(
 		core.Category{
 			ID:        payload.ID,
 			Name:      payload.Name,
 			Color:     payload.Color,
-			Workspace: payload.Workspace,
+			Workspace: fmt.Sprint(workspace),
 		},
 	); err != nil {
 		ctx.JSON(
@@ -229,10 +221,9 @@ func (net *Network) EditCategory(ctx *gin.Context) {
 // @Summary List categories
 // @Description Endpoint used to List all categories from a workspace in database
 // @Tags Categories
-// @Param workspace path string true "Workspace"
 // @Produce json
 // @Success 200 {string} arn
-// @Router /categories/{workspace} [get]
+// @Router /categories [get]
 // @Security ApiKeyAuth
 func (net *Network) ListCategories(ctx *gin.Context) {
 	username, exists := ctx.Get("username")
@@ -253,7 +244,8 @@ func (net *Network) ListCategories(ctx *gin.Context) {
 		return
 	}
 
-	output, err := net.svc.ListCategories(ctx.Param("workspace"))
+	workspace, _ := ctx.Get("workspace")
+	output, err := net.svc.ListCategories(fmt.Sprint(workspace))
 	if err != nil {
 		ctx.JSON(
 			http.StatusInternalServerError,

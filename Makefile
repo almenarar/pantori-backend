@@ -11,7 +11,7 @@ handlers:
 	go tool cover -func=coverage.out
 
 integration:
-	go test -coverprofile coverage.out ./internal/auth/infra ./internal/domains/goods/infra
+	go test -coverprofile coverage.out ./internal/auth/infra ./internal/domains/goods/infra ./internal/domains/categories/infra
 	go tool cover -func=coverage.out
 	
 build:
