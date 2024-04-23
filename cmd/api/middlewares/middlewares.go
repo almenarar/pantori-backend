@@ -40,7 +40,7 @@ func (mdd *middlewares) SetCORS() gin.HandlerFunc {
 		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Authorization, origin, Content-Type, accept")
 		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Content-Type", "application/json")
+		c.Header("Content-Type", "application/json; charset=utf-8")
 
 		if c.Request.Method != "OPTIONS" {
 			c.Next()
