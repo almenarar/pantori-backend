@@ -1,13 +1,16 @@
-package goodsinfra
+package infra
 
 import (
-	core "pantori/internal/domains/goods/core"
+	"pantori/internal/domains/goods/core"
 
+	"context"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+
 	"github.com/google/uuid"
 )
 
@@ -48,14 +51,15 @@ func (dy *dynamo) EditItem(good core.Good) error {
 }
 
 func (dy *dynamo) putItem(good core.Good) error {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 
-	av, err := dynamodbattribute.MarshalMap(good)
+	av, err := attributevalue.MarshalMap(good)
 	if err != nil {
 		return err
 	}
 
 	_, err = client.PutItem(
+		context.TODO(),
 		&dynamodb.PutItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
 			Item:      av,
@@ -68,18 +72,12 @@ func (dy *dynamo) putItem(good core.Good) error {
 }
 
 func (dy *dynamo) GetItemByID(good core.Good) (core.Good, error) {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 	output, err := client.GetItem(
+		context.TODO(),
 		&dynamodb.GetItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
-			Key: map[string]*dynamodb.AttributeValue{
-				"ID": {
-					S: aws.String(good.ID),
-				},
-				"Workspace": {
-					S: aws.String(good.Workspace),
-				},
-			},
+			Key:       dy.GetKey(good),
 		},
 	)
 	if err != nil {
@@ -90,7 +88,7 @@ func (dy *dynamo) GetItemByID(good core.Good) (core.Good, error) {
 	if len(output.Item) == 0 {
 		return core.Good{}, nil
 	} else {
-		err = dynamodbattribute.UnmarshalMap(output.Item, &foundGood)
+		err = attributevalue.UnmarshalMap(output.Item, &foundGood)
 		if err != nil {
 			return good, err
 		}
@@ -99,17 +97,22 @@ func (dy *dynamo) GetItemByID(good core.Good) (core.Good, error) {
 }
 
 func (dy *dynamo) GetAllItems(workspace string) ([]core.Good, error) {
-	client := dynamodb.New(createSession())
+	attr, err := attributevalue.Marshal(workspace)
+	if err != nil {
+		panic(err)
+	}
+
+	client := dynamodb.NewFromConfig(createConfig())
 	result, err := client.Query(
+		context.TODO(),
 		&dynamodb.QueryInput{
-			TableName:              &dy.params.GoodsTable,
-			IndexName:              &dy.params.GoodsTableIndex,
-			KeyConditionExpression: aws.String("Workspace = :Workspace"),
-			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-				":Workspace": {S: aws.String(workspace)},
-			},
+			TableName:                 &dy.params.GoodsTable,
+			IndexName:                 &dy.params.GoodsTableIndex,
+			KeyConditionExpression:    aws.String("Workspace = :Workspace"),
+			ExpressionAttributeValues: map[string]types.AttributeValue{":Workspace": attr},
 		},
 	)
+
 	if err != nil {
 		return []core.Good{}, err
 	}
@@ -117,7 +120,7 @@ func (dy *dynamo) GetAllItems(workspace string) ([]core.Good, error) {
 	response := make([]core.Good, 0)
 	for _, item := range result.Items {
 		good := core.Good{}
-		err := dynamodbattribute.UnmarshalMap(item, &good)
+		err := attributevalue.UnmarshalMap(item, &good)
 		if err != nil {
 			return []core.Good{}, err
 		}
@@ -127,22 +130,30 @@ func (dy *dynamo) GetAllItems(workspace string) ([]core.Good, error) {
 }
 
 func (dy *dynamo) DeleteItem(good core.Good) error {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 	_, err := client.DeleteItem(
+		context.TODO(),
 		&dynamodb.DeleteItemInput{
 			TableName: aws.String(dy.params.GoodsTable),
-			Key: map[string]*dynamodb.AttributeValue{
-				"ID": {
-					S: aws.String(good.ID),
-				},
-				"Workspace": {
-					S: aws.String(good.Workspace),
-				},
-			},
+			Key:       dy.GetKey(good),
 		},
 	)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (dy *dynamo) GetKey(good core.Good) map[string]types.AttributeValue {
+	id, err := attributevalue.Marshal(good.ID)
+	if err != nil {
+		panic(err)
+	}
+
+	workspace, err := attributevalue.Marshal(good.Workspace)
+	if err != nil {
+		panic(err)
+	}
+
+	return map[string]types.AttributeValue{"ID": id, "Workspace": workspace}
 }

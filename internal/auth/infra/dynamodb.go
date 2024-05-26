@@ -3,9 +3,12 @@ package infra
 import (
 	"pantori/internal/auth/core"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type dynamo struct {
@@ -19,7 +22,7 @@ func NewDynamoDB(table string) *dynamo {
 }
 
 func (dy *dynamo) CreateUser(user core.User) error {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 
 	dbUser := core.UserDB{
 		Username:  user.Username,
@@ -30,12 +33,13 @@ func (dy *dynamo) CreateUser(user core.User) error {
 		CreatedAt: user.CreatedAt,
 	}
 
-	av, err := dynamodbattribute.MarshalMap(dbUser)
+	av, err := attributevalue.MarshalMap(dbUser)
 	if err != nil {
 		return &ErrDataTransformFailed{Inner: err}
 	}
 
 	_, err = client.PutItem(
+		context.TODO(),
 		&dynamodb.PutItemInput{
 			TableName: aws.String(dy.UserTable),
 			Item:      av,
@@ -48,15 +52,12 @@ func (dy *dynamo) CreateUser(user core.User) error {
 }
 
 func (dy *dynamo) DeleteUser(user core.User) error {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 	_, err := client.DeleteItem(
+		context.TODO(),
 		&dynamodb.DeleteItemInput{
 			TableName: aws.String(dy.UserTable),
-			Key: map[string]*dynamodb.AttributeValue{
-				"Username": {
-					S: aws.String(user.Username),
-				},
-			},
+			Key:       dy.GetKey(user),
 		},
 	)
 	if err != nil {
@@ -65,16 +66,13 @@ func (dy *dynamo) DeleteUser(user core.User) error {
 	return nil
 }
 
-func (dy *dynamo) GetUser(username string) (core.User, error) {
-	client := dynamodb.New(createSession())
+func (dy *dynamo) GetUser(user core.User) (core.User, error) {
+	client := dynamodb.NewFromConfig(createConfig())
 	output, err := client.GetItem(
+		context.TODO(),
 		&dynamodb.GetItemInput{
 			TableName: aws.String(dy.UserTable),
-			Key: map[string]*dynamodb.AttributeValue{
-				"Username": {
-					S: aws.String(username),
-				},
-			},
+			Key:       dy.GetKey(user),
 		},
 	)
 	if err != nil {
@@ -82,11 +80,10 @@ func (dy *dynamo) GetUser(username string) (core.User, error) {
 	}
 
 	var dbUser core.UserDB
-	var user core.User
 	if len(output.Item) == 0 {
 		return core.User{}, &ErrUserNotFound{}
 	} else {
-		err = dynamodbattribute.UnmarshalMap(output.Item, &dbUser)
+		err = attributevalue.UnmarshalMap(output.Item, &dbUser)
 		if err != nil {
 			return core.User{}, &ErrDataTransformFailed{Inner: err}
 		}
@@ -100,8 +97,9 @@ func (dy *dynamo) GetUser(username string) (core.User, error) {
 }
 
 func (dy *dynamo) ListUsers() ([]core.User, error) {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 	result, err := client.Scan(
+		context.TODO(),
 		&dynamodb.ScanInput{
 			TableName: aws.String(dy.UserTable),
 		},
@@ -113,11 +111,20 @@ func (dy *dynamo) ListUsers() ([]core.User, error) {
 	response := make([]core.User, 0)
 	for _, item := range result.Items {
 		user := core.User{}
-		err := dynamodbattribute.UnmarshalMap(item, &user)
+		err := attributevalue.UnmarshalMap(item, &user)
 		if err != nil {
 			return response, &ErrDataTransformFailed{Inner: err}
 		}
 		response = append(response, user)
 	}
 	return response, nil
+}
+
+func (dy *dynamo) GetKey(user core.User) map[string]types.AttributeValue {
+	username, err := attributevalue.Marshal(user.Username)
+	if err != nil {
+		panic(err)
+	}
+
+	return map[string]types.AttributeValue{"Username": username}
 }

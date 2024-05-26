@@ -27,16 +27,14 @@ func TestDynamoDB(t *testing.T) {
 		err := dy.DeleteUser(user)
 		assert.Nil(err)
 
-		output, err := dy.GetUser("int_test_name")
+		output, err := dy.GetUser(user)
 		assert.Equal(core.User{}, output)
 		assert.IsType(&infra.ErrUserNotFound{}, err)
 
 		err = dy.CreateUser(user)
-
 		assert.Nil(err)
 
-		output, err = dy.GetUser("int_test_name")
-
+		output, err = dy.GetUser(user)
 		assert.Nil(err)
 		assert.Equal(user.Username, output.Username)
 		assert.Equal(user.GivenPassword, output.ActualPassword)
@@ -44,6 +42,5 @@ func TestDynamoDB(t *testing.T) {
 
 		err = dy.DeleteUser(user)
 		assert.Nil(err)
-
 	})
 }

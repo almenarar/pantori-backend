@@ -233,11 +233,11 @@ func (net *Network) ListCategories(ctx *gin.Context) {
 			[]core.Category{
 				{
 					Name:  "dryrun1",
-					Color: "green",
+					Color: "FFFF2800",
 				},
 				{
 					Name:  "dryrun2",
-					Color: "blue",
+					Color: "FFFF2800",
 				},
 			},
 		)

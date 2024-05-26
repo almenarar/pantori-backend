@@ -10,7 +10,7 @@ type DatabaseMock struct {
 	Invocation *string
 }
 
-func (db *DatabaseMock) GetUser(string) (core.User, error) {
+func (db *DatabaseMock) GetUser(user core.User) (core.User, error) {
 	*db.Invocation = *db.Invocation + "-Get"
 	if db.Err != nil {
 		return core.User{}, db.Err

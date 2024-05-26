@@ -8,7 +8,7 @@ type ServicePort interface {
 }
 
 type DatabasePort interface {
-	GetUser(string) (User, error)
+	GetUser(User) (User, error)
 	ListUsers() ([]User, error)
 	CreateUser(User) error
 	DeleteUser(User) error

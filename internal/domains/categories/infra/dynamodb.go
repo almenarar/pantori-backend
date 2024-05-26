@@ -3,9 +3,12 @@ package infra
 import (
 	"pantori/internal/domains/categories/core"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"context"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type DynamoParams struct {
@@ -40,14 +43,15 @@ func (dy *dynamo) EditItem(Category core.Category) error {
 }
 
 func (dy *dynamo) putItem(Category core.Category) error {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 
-	av, err := dynamodbattribute.MarshalMap(Category)
+	av, err := attributevalue.MarshalMap(Category)
 	if err != nil {
 		return err
 	}
 
 	_, err = client.PutItem(
+		context.TODO(),
 		&dynamodb.PutItemInput{
 			TableName: aws.String(dy.params.CategoriesTable),
 			Item:      av,
@@ -60,15 +64,19 @@ func (dy *dynamo) putItem(Category core.Category) error {
 }
 
 func (dy *dynamo) ListItemsByWorkspace(workspace string) ([]core.Category, error) {
-	client := dynamodb.New(createSession())
+	attr, err := attributevalue.Marshal(workspace)
+	if err != nil {
+		panic(err)
+	}
+
+	client := dynamodb.NewFromConfig(createConfig())
 	result, err := client.Query(
+		context.TODO(),
 		&dynamodb.QueryInput{
-			TableName:              &dy.params.CategoriesTable,
-			IndexName:              &dy.params.CategoriesTableIndex,
-			KeyConditionExpression: aws.String("Workspace = :Workspace"),
-			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-				":Workspace": {S: aws.String(workspace)},
-			},
+			TableName:                 &dy.params.CategoriesTable,
+			IndexName:                 &dy.params.CategoriesTableIndex,
+			KeyConditionExpression:    aws.String("Workspace = :Workspace"),
+			ExpressionAttributeValues: map[string]types.AttributeValue{":Workspace": attr},
 		},
 	)
 	if err != nil {
@@ -78,7 +86,7 @@ func (dy *dynamo) ListItemsByWorkspace(workspace string) ([]core.Category, error
 	response := make([]core.Category, 0)
 	for _, item := range result.Items {
 		Category := core.Category{}
-		err := dynamodbattribute.UnmarshalMap(item, &Category)
+		err := attributevalue.UnmarshalMap(item, &Category)
 		if err != nil {
 			return []core.Category{}, err
 		}
@@ -88,22 +96,30 @@ func (dy *dynamo) ListItemsByWorkspace(workspace string) ([]core.Category, error
 }
 
 func (dy *dynamo) DeleteItem(category core.Category) error {
-	client := dynamodb.New(createSession())
+	client := dynamodb.NewFromConfig(createConfig())
 	_, err := client.DeleteItem(
+		context.TODO(),
 		&dynamodb.DeleteItemInput{
 			TableName: aws.String(dy.params.CategoriesTable),
-			Key: map[string]*dynamodb.AttributeValue{
-				"ID": {
-					S: aws.String(category.ID),
-				},
-				"Workspace": {
-					S: aws.String(category.Workspace),
-				},
-			},
+			Key:       dy.GetKey(category),
 		},
 	)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (dy *dynamo) GetKey(category core.Category) map[string]types.AttributeValue {
+	id, err := attributevalue.Marshal(category.ID)
+	if err != nil {
+		panic(err)
+	}
+
+	workspace, err := attributevalue.Marshal(category.Workspace)
+	if err != nil {
+		panic(err)
+	}
+
+	return map[string]types.AttributeValue{"ID": id, "Workspace": workspace}
 }

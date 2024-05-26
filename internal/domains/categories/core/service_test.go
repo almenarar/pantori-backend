@@ -80,7 +80,7 @@ func TestDefaultAdd(t *testing.T) {
 			Input:                     "workspace",
 			WhenDbErr:                 nil,
 			ExpectedLastCategoryName:  "Outros",
-			ExpectedLastCategoryColor: "0xFF92664A",
+			ExpectedLastCategoryColor: "FF92664A",
 			ExpectedError:             nil,
 			ExpectedInvocation:        strings.Repeat("-GenerateID-GetTime-Add", 7),
 		},

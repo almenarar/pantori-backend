@@ -15,7 +15,7 @@ func NewService(crypto CryptographyPort, db DatabasePort, utils UtilsPort) *serv
 }
 
 func (svc *service) Authenticate(input User) (string, error) {
-	user, err := svc.db.GetUser(input.Username)
+	user, err := svc.db.GetUser(input)
 	if err != nil {
 		return "", &ErrDbOpFailed{err}
 	}

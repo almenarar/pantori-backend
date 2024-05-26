@@ -1,18 +1,17 @@
 package infra
 
 import (
-	"os"
+	"context"
+	"log"
 
-	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 )
 
-func createSession() *session.Session {
-	session := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
-	if os.Getenv("AWS_ENDPOINT") != "" {
-		endpoint := os.Getenv("AWS_ENDPOINT")
-		session.Config.Endpoint = &endpoint
+func createConfig() aws.Config {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatalf("unable to load SDK config, %v", err)
 	}
-	return session
+	return cfg
 }
