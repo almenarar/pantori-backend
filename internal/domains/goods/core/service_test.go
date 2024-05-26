@@ -25,14 +25,14 @@ func TestAdd(t *testing.T) {
 			InputGood:          core.Good{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
-			ExpectedInvocation: "-GetImage-Add",
+			ExpectedInvocation: "-GetImage-GenerateID-GetTime-Add",
 		},
 		{
 			Description:        "db error",
 			InputGood:          core.Good{},
 			WhenDbErr:          errors.New("some error"),
 			ExpectedError:      &core.ErrDbOpFailed{},
-			ExpectedInvocation: "-GetImage-Add",
+			ExpectedInvocation: "-GetImage-GenerateID-GetTime-Add",
 		},
 	}
 
@@ -47,6 +47,9 @@ func TestAdd(t *testing.T) {
 					Invocation: &invocationTrail,
 				},
 				&mocks.ImageMock{
+					Invocation: &invocationTrail,
+				},
+				&mocks.UtilsMocks{
 					Invocation: &invocationTrail,
 				},
 			)
@@ -77,14 +80,14 @@ func TestEdit(t *testing.T) {
 			InputGood:          core.Good{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
-			ExpectedInvocation: "-Edit",
+			ExpectedInvocation: "-GetTime-Edit",
 		},
 		{
 			Description:        "db error",
 			InputGood:          core.Good{},
 			WhenDbErr:          errors.New("some error"),
 			ExpectedError:      &core.ErrDbOpFailed{},
-			ExpectedInvocation: "-Edit",
+			ExpectedInvocation: "-GetTime-Edit",
 		},
 	}
 
@@ -99,6 +102,9 @@ func TestEdit(t *testing.T) {
 					Invocation: &invocationTrail,
 				},
 				&mocks.ImageMock{
+					Invocation: &invocationTrail,
+				},
+				&mocks.UtilsMocks{
 					Invocation: &invocationTrail,
 				},
 			)
@@ -152,6 +158,9 @@ func TestGet(t *testing.T) {
 					Invocation: &invocationTrail,
 				},
 				&mocks.ImageMock{
+					Invocation: &invocationTrail,
+				},
+				&mocks.UtilsMocks{
 					Invocation: &invocationTrail,
 				},
 			)
@@ -211,6 +220,9 @@ func TestList(t *testing.T) {
 				&mocks.ImageMock{
 					Invocation: &invocationTrail,
 				},
+				&mocks.UtilsMocks{
+					Invocation: &invocationTrail,
+				},
 			)
 
 			out, err := svc.ListGoods(testCase.InputGood.Workspace)
@@ -262,6 +274,9 @@ func TestDelete(t *testing.T) {
 					Invocation: &invocationTrail,
 				},
 				&mocks.ImageMock{
+					Invocation: &invocationTrail,
+				},
+				&mocks.UtilsMocks{
 					Invocation: &invocationTrail,
 				},
 			)

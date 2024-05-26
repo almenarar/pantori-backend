@@ -1,4 +1,4 @@
-package goodsinfra
+package infra
 
 import (
 	"encoding/json"

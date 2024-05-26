@@ -24,7 +24,9 @@ func New() *hdl.Network {
 	params := loadUnsplashParamsFromEnv()
 	image := infra.NewUnsplash(params)
 
-	service := core.NewService(db, image)
+	ut := infra.NewUtils()
+
+	service := core.NewService(db, image, ut)
 
 	return hdl.NewNetwork(service)
 }

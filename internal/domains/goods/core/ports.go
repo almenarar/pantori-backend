@@ -19,3 +19,8 @@ type DatabasePort interface {
 type ImagePort interface {
 	GetImageURL(string) string
 }
+
+type UtilsPort interface {
+	GenerateID() string
+	GetCurrentTime() string
+}

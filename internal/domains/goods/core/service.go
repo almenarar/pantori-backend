@@ -3,18 +3,23 @@ package core
 type service struct {
 	db DatabasePort
 	im ImagePort
+	ut UtilsPort
 }
 
-func NewService(db DatabasePort, im ImagePort) *service {
+func NewService(db DatabasePort, im ImagePort, ut UtilsPort) *service {
 	return &service{
 		db: db,
 		im: im,
+		ut: ut,
 	}
 }
 
 func (svc *service) AddGood(good Good) error {
 	// a fail here is not critical, will only log
 	good.ImageURL = svc.im.GetImageURL(good.Name)
+
+	good.ID = svc.ut.GenerateID()
+	good.CreatedAt = svc.ut.GetCurrentTime()
 
 	err := svc.db.CreateItem(good)
 	if err != nil {
@@ -24,6 +29,8 @@ func (svc *service) AddGood(good Good) error {
 }
 
 func (svc *service) EditGood(good Good) error {
+	good.UpdatedAt = svc.ut.GetCurrentTime()
+
 	err := svc.db.EditItem(good)
 	if err != nil {
 		return &ErrDbOpFailed{err}

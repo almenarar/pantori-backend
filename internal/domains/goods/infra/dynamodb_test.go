@@ -1,4 +1,4 @@
-package goodsinfra_test
+package infra_test
 
 import (
 	"pantori/internal/domains/goods/core"

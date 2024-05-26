@@ -1,4 +1,4 @@
-package goodsinfra
+package infra
 
 import (
 	core "pantori/internal/domains/goods/core"
