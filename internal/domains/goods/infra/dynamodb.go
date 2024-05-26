@@ -4,14 +4,11 @@ import (
 	"pantori/internal/domains/goods/core"
 
 	"context"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-
-	"github.com/google/uuid"
 )
 
 type DynamoParams struct {
@@ -30,9 +27,6 @@ func NewDynamoDB(params DynamoParams) *dynamo {
 }
 
 func (dy *dynamo) CreateItem(good core.Good) error {
-	good.ID = uuid.New().String()
-	good.CreatedAt = time.Now().UTC().Format(time.RFC3339)
-
 	err := dy.putItem(good)
 	if err != nil {
 		return err
@@ -41,8 +35,6 @@ func (dy *dynamo) CreateItem(good core.Good) error {
 }
 
 func (dy *dynamo) EditItem(good core.Good) error {
-	good.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
-
 	err := dy.putItem(good)
 	if err != nil {
 		return err
