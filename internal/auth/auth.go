@@ -10,7 +10,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+func NewInternal() *handlers.Internal {
+	return handlers.NewInternal(genService())
+}
+
 func New() *handlers.Network {
+	return handlers.NewNetwork(genService())
+}
+
+func genService() core.ServicePort {
 	jwt_key := LoadKeyFromEnv()
 	table := LoadDynamoDBParamsFromEnv()
 
@@ -18,9 +26,7 @@ func New() *handlers.Network {
 	utils := infra.NewUtils()
 	db := infra.NewDynamoDB(table)
 
-	service := core.NewService(crypto, db, utils)
-
-	return handlers.NewNetwork(service)
+	return core.NewService(crypto, db, utils)
 }
 
 func LoadDynamoDBParamsFromEnv() string {

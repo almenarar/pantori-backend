@@ -10,7 +10,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+func NewInternal() *hdl.Internal {
+	return hdl.NewInternal(genService())
+}
+
 func New() *hdl.Network {
+	return hdl.NewNetwork(genService())
+}
+
+func genService() core.ServicePort {
 	var db core.DatabasePort
 	if viper.IsSet("mode.database") &&
 		viper.GetString("mode.database") == "dynamo" {
@@ -26,9 +34,7 @@ func New() *hdl.Network {
 
 	ut := infra.NewUtils()
 
-	service := core.NewService(db, image, ut)
-
-	return hdl.NewNetwork(service)
+	return core.NewService(db, image, ut)
 }
 
 func loadConnFromEnv() string {
