@@ -13,9 +13,11 @@ import (
 
 func New() core.ServicePort {
 	numWorkers := LoadWorkerNumFromEnv()
+	emailAuth := LoadEmailAuthFromEnv()
+
 	users := auth.NewInternal()
 	goods := goods.NewInternal()
-	email := infra.NewEmailProvider()
+	email := infra.NewEmailProvider(emailAuth)
 
 	return core.NewService(goods, users, email, numWorkers)
 }
@@ -28,4 +30,23 @@ func LoadWorkerNumFromEnv() int {
 
 	log.Panic().Stack().Err(errors.New("jwt key undefined")).Msg("")
 	return 0
+}
+
+func LoadEmailAuthFromEnv() infra.EmailAuth {
+	output := infra.EmailAuth{}
+
+	viper.BindEnv("email_email", "EMAIL_PROVIDER_EMAIL")
+	if viper.IsSet("email_email") {
+		output.Email = viper.GetString("email_email")
+	} else {
+		log.Panic().Stack().Err(errors.New("email email undefined")).Msg("")
+	}
+
+	viper.BindEnv("email_password", "EMAIL_PROVIDER_PASSWORD")
+	if viper.IsSet("email_password") {
+		output.Password = viper.GetString("email_password")
+	} else {
+		log.Panic().Stack().Err(errors.New("email password undefined")).Msg("")
+	}
+	return output
 }

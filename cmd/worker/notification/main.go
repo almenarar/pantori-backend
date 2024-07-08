@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"pantori/internal/domains/notifiers"
 
@@ -31,8 +32,13 @@ func main() {
 		cancel()
 	}()
 
-	notifier.NotifyExpiredGoods(ctx)
-
-	<-ctx.Done()
-	log.Println("Job runner stopped.")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			notifier.NotifyExpiredGoods()
+			time.Sleep(24 * time.Hour)
+		}
+	}
 }

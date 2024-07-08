@@ -1,9 +1,7 @@
 package core
 
-import "context"
-
 type ServicePort interface {
-	NotifyExpiredGoods(ctx context.Context) error
+	NotifyExpiredGoods()
 }
 
 type GoodsPort interface {
@@ -15,5 +13,5 @@ type UsersPort interface {
 }
 
 type EmailPort interface {
-	SendEmail(user User, expireToday, expireSoon, expired []Good) error
+	SendEmail(user User, report Report) error
 }

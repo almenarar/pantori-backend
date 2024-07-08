@@ -11,3 +11,10 @@ type User struct {
 	Email     string
 	Workspace string
 }
+
+type Report struct {
+	Username     string
+	ExpiresToday []Good
+	ExpiresSoon  []Good
+	Expired      []Good
+}

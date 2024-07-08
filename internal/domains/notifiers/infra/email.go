@@ -1,57 +1,158 @@
 package infra
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"pantori/internal/domains/notifiers/core"
+	"text/template"
 
-	"net/smtp"
+	"gopkg.in/gomail.v2"
 )
 
-type email struct{}
+const emailTemplate = `
+    <!DOCTYPE html>
+    <html>
+   <head>
+    <title>Alerta de Vencimento</title>
+    <style>
+        table {
+            width: 35%;
+			margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+		h3 {
+            text-align: center;
+        }
+        .container {
+            padding-bottom: 20px;
+        }
+    </style>
+</head>
+    <body>
+        <!-- Your exported HTML content here -->
+        <div style="text-align: center;">
+            <img src="cid:email_header.png" alt="Header Image" style="width: 100%; max-width: 600px;">
+            <h2>Alerta de Vencimento</h2>
+            <p>{{.Username}}, os seguintes produtos vão vencer ou já venceram:</p>
 
-func NewEmailProvider() *email {
-	return &email{}
+			{{ if .Expired }}
+			<h3>Itens Vencidos :(( -> É melhor jogar logo fora</h3>
+			<table>
+				<tr>
+					<th>Item</th>
+					<th>Data de Validade</th>
+				</tr>
+				{{ range .Expired }}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .Expire }}</td>
+				</tr>
+				{{ end }}
+			</table>
+			<hr>
+			{{ end }}
+
+			{{ if .ExpiresToday }}
+			<h3>Itens que vencem hoje!! Nhamnham</h3>
+			<table>
+				<tr>
+					<th>Item</th>
+					<th>Data de Validade</th>
+				</tr>
+				{{ range .ExpiresToday }}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .Expire }}</td>
+				</tr>
+				{{ end }}
+			</table>
+			<hr>
+			{{ end }}
+
+			{{ if .ExpiresSoon }}
+			<h3>Itens que vencem em breve --- hora de planejar usar ou doar!!</h3>
+			<table>
+				<tr>
+					<th>Item</th>
+					<th>Data de Validade</th>
+				</tr>
+				{{ range .ExpiresSoon }}
+				<tr>
+					<td>{{ .Name }}</td>
+					<td>{{ .Expire }}</td>
+				</tr>
+				{{ end }}
+			</table>
+			<hr>
+			{{ end }}
+
+            <p>Utilize ou descarte corretamente.</p>
+            <p>Obrigado!</p>
+        </div>
+    </body>
+    </html>
+    `
+
+type EmailAuth struct {
+	Email    string
+	Password string
 }
 
-func (e *email) SendEmail(user core.User, expireToday, expireSoon, expired []core.Good) error {
-	if len(expireToday) == 0 {
-		expireToday = append(expireToday, core.Good{Name: "empty"})
-	}
-	if len(expireSoon) == 0 {
-		expireSoon = append(expireSoon, core.Good{Name: "empty"})
-	}
-	if len(expired) == 0 {
-		expired = append(expired, core.Good{Name: "empty"})
-	}
-	fmt.Printf("%s -- today: %s --- soon: %s --- expired: %s\n", user.Name, expireToday[0].Name, expireSoon[0].Name, expired[0].Name)
-	return nil
+type email struct {
+	auth     EmailAuth
+	smtpHost string
+	smtpPort string
 }
 
-func foo() {
+func NewEmailProvider(auth EmailAuth) *email {
+	return &email{
+		auth:     auth,
+		smtpHost: "smtp.gmail.com",
+		smtpPort: "587",
+	}
+}
 
-	// Choose auth method and set it up
+func (e *email) SendEmail(user core.User, report core.Report) error {
+	report.Username = user.Name
 
-	auth := smtp.PlainAuth("", "john.doe@gmail.com", "extremely_secret_pass", "smtp.gmail.com")
-
-	// Here we do it all: connect to our server, set up a message and send it
-
-	to := []string{"kate.doe@example.com"}
-
-	msg := []byte("To: kate.doe@example.com\r\n" +
-
-		"Subject: Why aren't you using Mailtrap yet?\r\n" +
-
-		"\r\n" +
-
-		"Here's the space for our great sales pitch\r\n")
-
-	err := smtp.SendMail("smtp.gmail.com:587", auth, "john.doe@gmail.com", to, msg)
-
+	tmpl, err := template.New("email").Parse(emailTemplate)
 	if err != nil {
-
-		log.Fatal(err)
-
+		log.Fatalf("Failed to parse template: %s", err)
 	}
 
+	var bodyContent string
+	buffer := new(bytes.Buffer)
+
+	err = tmpl.Execute(buffer, report)
+	if err != nil {
+		log.Fatalf("Failed to execute template: %s", err)
+	}
+	bodyContent = buffer.String()
+
+	// Create a new email
+	m := gomail.NewMessage()
+	m.SetHeader("From", e.auth.Email)
+	m.SetHeader("To", user.Email)
+	m.SetHeader("Subject", "Alerta de Vencimento")
+	m.SetBody("text/html", bodyContent)
+	m.Embed("/go/bin/email_header.png")
+
+	// SMTP server configuration
+	d := gomail.NewDialer("smtp.gmail.com", 587, e.auth.Email, e.auth.Password)
+
+	// Send the email
+	if err := d.DialAndSend(m); err != nil {
+		log.Fatalf("Failed to send email: %s", err)
+	}
+	fmt.Println("Email sent successfully!")
+	return nil
 }
