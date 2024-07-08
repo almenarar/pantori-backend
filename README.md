@@ -1,6 +1,10 @@
 # Pantori
 
-This project aims to help users manage goods and expiration dates efficiently, preventing food waste. The system consists of a Golang API for goods registration, a NoSQL database (currently AWS DynamoDB in production) for data storage, and a Flutter frontend web application for user interaction (served via Nginx).
+This project aims to help users manage goods and expiration dates efficiently, preventing food waste. The system runs in AWS ECS and consists of:
+- a Golang API for goods registration;
+- a Golang worker to daily notify of expiring foods by email;
+- a NoSQL database (currently AWS DynamoDB in production);
+- a Flutter frontend web application for user interaction (served via Nginx);
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -75,18 +79,25 @@ In Hexagonal Architecture, the application is divided into three main layers:
 
     - **`handlers/`**: Implementation of entry ports interfaces, converts user input in to domain object and pass to service.
       - `http.go`: HTTP routes, input validation.
+      - `internal.go`: Client that allows other domains to make requests.
 
     - **`infra/`**: Implementations of the port interfaces, connecting the core to external systems.
       - `dynamodb.go`: Implements database port to AWS DynamoDB.
       - `sql.go`: Implements database port to MySQL.
+      - `utils.go`: Includes functions from Go build-in or common libraries like time, strings, uuid, etc.
 
-- **`cmd/`**: Application entry point.
-  - **`middlewares`**: Logger configuration and API Authorization
-  - **`routes`**: Gin start, connects the routes to server.
-  - **`swagger`**: Swagger related files.
-  - `main.go`: Starts swagger and logger, load parameters and init server.
+- **`cmd/`**: Application entrypoints.
+  - **`api/`**: API entrypoint.
+    - **`middlewares`**: Logger configuration and API Authorization
+    - **`routes`**: Gin start, connects the routes to server.
+    - **`swagger`**: Swagger related files.
+    - `main.go`: Starts swagger and logger, load parameters and init server.
+  - **`cli/`**: Future possible CLI entrypoint.
+  - **`worker/`**: Entrypoint to queue consumers and scheduled workers like notification service.
+    - `notification/main.go`: Starts notification service.
+- **`docker/`**: Dockerfiles and docker-compose files organized by service.
 
-- **`docker-compose.yml`**: Docker services and configurations.
+- **`assets/`**: Any media files like images, videos, etc. 
 
 - **`Makefile`**: Commands for building, testing and running the project.
 
@@ -102,11 +113,12 @@ In Hexagonal Architecture, the application is divided into three main layers:
 
 - [Zerolog](https://github.com/rs/zerolog);
 - [Gin](https://github.com/gin-gonic/gin);
+- [Viper](https://github.com/spf13/viper);
 - [Swag](https://github.com/swaggo/swag);
 - [JWT](https://github.com/golang-jwt/jwt);
 - [AWS SDK for Go](https://github.com/aws/aws-sdk-go);
 - [GORM](https://gorm.io/index.html);
-
+- [Gomail](https://github.com/go-gomail/gomail);
 
 ## API Documentation
 
@@ -161,24 +173,25 @@ This section outlines the current version of the Goods Expiry Management System 
 
 ### Current Version
 
-The current version of the project is `v1.1.0`. You can check the [release page](https://github.com/almenarar/pantori-backend/releases) for more details about each release.
+The current version of the project is `v1.3.0`. You can check the [release page](https://github.com/almenarar/pantori-backend/releases) for more details about each release.
 
 ### Roadmap
 
-#### Version `v1.2.0` (Future Release)
-
-- [ ] **Feature:** Allow user to create and manage their own categories.
-- [ ] **Enhancement:** Enable each good to have up to three categories.
-
-#### Version `v1.3.0` (Future Release)
-
-- [ ] **Feature:** Integrate a notification system for impending expiration dates.
-
-#### Version `v2.0.0` (Future Version)
+#### Release `v1.4.0` (Next Release)
 
 - [ ] **Enhancement:** Record the amount of food you still have.
 - [ ] **Enhancement:** Mark a good as missing.
 - [ ] **Feature:** Generate a shopping list from missing goods.
+- [ ] **Feature:** Update good by checking the item in shopping list
+
+#### Release `v1.5.0` (Future Release)
+
+- [ ] **Feature:** Allow new users registration by invite token.
+
+#### Release `v1.x.0` (Future Future Release)
+
+- [ ] **Feature:** Allow including new goods by photographing the invoice
+- [ ] **Enhancement:** Common goods will have a preset correct image in database
 
 
 ## Contributing
