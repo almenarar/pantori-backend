@@ -1,13 +1,18 @@
 .PHONY: build run stop clean logs-api cycle
 DOCKER_TAG = $(shell git rev-parse --short HEAD)
-IMAGE_NAME = pantori-backend
+API_IMAGE_NAME = pantori-api
+NOTIFIER_IMAGE_NAME = pantori-notifier
 
 unit:
-	go test -coverprofile coverage.out ./internal/auth/core ./internal/domains/goods/core  ./internal/domains/categories/core 
+	go test -coverprofile coverage.out ./internal/auth/core ./internal/domains/goods/core  ./internal/domains/categories/core  ./internal/domains/notifiers/core
 	go tool cover -func=coverage.out
 
 handlers:
 	go test -coverprofile coverage.out ./internal/auth/handlers ./internal/domains/goods/handlers ./internal/domains/categories/handlers
+	go tool cover -func=coverage.out
+
+test_email:
+	go test -coverprofile coverage.out ./internal/domains/notifiers/infra
 	go tool cover -func=coverage.out
 
 integration:
@@ -17,11 +22,17 @@ integration:
 build:
 	docker-compose build
 
-build-and-push:
-	docker build --platform=linux/amd64 -t $(IMAGE_NAME) .
-	docker tag $(IMAGE_NAME):latest $(IMAGE_NAME):$(DOCKER_TAG)
-	aws lightsail push-container-image --region us-east-1 --service-name pantori-api --label backend --image $(IMAGE_NAME):$(DOCKER_TAG)
+build-and-push-api:
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 471112738977.dkr.ecr.us-east-1.amazonaws.com
+	docker build -f ./docker/api/Dockerfile --platform=linux/amd64 -t $(API_IMAGE_NAME) .
+	docker tag $(API_IMAGE_NAME):latest 471112738977.dkr.ecr.us-east-1.amazonaws.com/$(API_IMAGE_NAME):$(DOCKER_TAG)
+	docker push 471112738977.dkr.ecr.us-east-1.amazonaws.com/$(API_IMAGE_NAME):$(DOCKER_TAG)
 
+build-and-push-notifier:
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 471112738977.dkr.ecr.us-east-1.amazonaws.com
+	docker build -f ./docker/notifier/Dockerfile --platform=linux/amd64 -t $(NOTIFIER_IMAGE_NAME) .
+	docker tag $(NOTIFIER_IMAGE_NAME):latest 471112738977.dkr.ecr.us-east-1.amazonaws.com/$(NOTIFIER_IMAGE_NAME):$(DOCKER_TAG)
+	docker push 471112738977.dkr.ecr.us-east-1.amazonaws.com/$(NOTIFIER_IMAGE_NAME):$(DOCKER_TAG)
 run:
 	docker-compose up -d
 
