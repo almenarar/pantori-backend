@@ -104,7 +104,6 @@ definitions:
         type: string
     required:
     - BuyDate
-    - Categories
     - Expire
     - Name
     type: object
@@ -388,6 +387,21 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get good
+      tags:
+      - Goods
+  /goods/shopping-list:
+    get:
+      description: Endpoint used to return goods that are running out or expired
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get shopping list
       tags:
       - Goods
   /login:

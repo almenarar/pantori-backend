@@ -5,12 +5,13 @@ import (
 )
 
 type DatabaseMock struct {
-	ErrGet     error
-	ErrAdd     error
-	ErrEdit    error
-	ErrList    error
-	ErrDelete  error
-	Invocation *string
+	ListItemsOutput []core.Good
+	ErrGet          error
+	ErrAdd          error
+	ErrEdit         error
+	ErrList         error
+	ErrDelete       error
+	Invocation      *string
 }
 
 func (db *DatabaseMock) GetItemByID(core.Good) (core.Good, error) {
@@ -25,6 +26,9 @@ func (db *DatabaseMock) GetAllItems(string) ([]core.Good, error) {
 	*db.Invocation = *db.Invocation + "-List"
 	if db.ErrList != nil {
 		return []core.Good{}, db.ErrList
+	}
+	if len(db.ListItemsOutput) > 0 {
+		return db.ListItemsOutput, nil
 	}
 	return []core.Good{
 		{ID: "foo"},

@@ -1,5 +1,7 @@
 package core
 
+import "time"
+
 type service struct {
 	db DatabasePort
 	im ImagePort
@@ -60,4 +62,43 @@ func (svc *service) DeleteGood(good Good) error {
 		return &ErrDbOpFailed{err}
 	}
 	return nil
+}
+
+func (svc *service) BuildShoppingList(workspace string) ([]Good, error) {
+	shoppingList := []Good{}
+
+	result, err := svc.db.GetAllItems(workspace)
+	if err != nil {
+		return []Good{}, &ErrDbOpFailed{err}
+	}
+
+	for _, good := range result {
+		if good.Quantity == "Empty" || good.Quantity == "Low" {
+			shoppingList = append(shoppingList, good)
+		}
+
+		if good.OpenExpire != "" {
+			good.Expire = good.OpenExpire
+		}
+		expired, err := svc.isExpired(good.Expire)
+		if err != nil {
+			return []Good{}, &ErrDateParseError{err}
+		}
+		if expired {
+			shoppingList = append(shoppingList, good)
+		}
+	}
+	return shoppingList, nil
+}
+
+func (svc *service) isExpired(date string) (bool, error) {
+	dateFormat := "02/01/2006"
+	currentDate := time.Now()
+
+	parsedDate, err := time.Parse(dateFormat, date)
+	if err != nil {
+		return false, err
+	}
+
+	return parsedDate.Sub(currentDate) < 0, nil
 }

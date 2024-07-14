@@ -6,6 +6,7 @@ type ServicePort interface {
 	GetGood(Good) (Good, error)
 	ListGoods(string) ([]Good, error)
 	DeleteGood(Good) error
+	BuildShoppingList(workspace string) ([]Good, error)
 }
 
 type DatabasePort interface {

@@ -23,6 +23,9 @@ func (int *Internal) GetGoodsFromWorkspace(workspace string) ([]notifiers.Good, 
 	}
 
 	for _, good := range goods {
+		if good.OpenExpire != "" {
+			good.Expire = good.OpenExpire
+		}
 		output = append(output, notifiers.Good{
 			Name:      good.Name,
 			Workspace: good.Workspace,

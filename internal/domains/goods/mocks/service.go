@@ -48,3 +48,11 @@ func (svc *Service) DeleteGood(good core.Good) error {
 	}
 	return svc.AnalyzeGood(good)
 }
+
+func (svc *Service) BuildShoppingList(workspace string) ([]core.Good, error) {
+	svc.Invoked = true
+	if svc.Err != nil {
+		return []core.Good{}, svc.Err
+	}
+	return []core.Good{}, svc.AnalyzeStr(workspace)
+}

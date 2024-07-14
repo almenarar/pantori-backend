@@ -414,6 +414,31 @@ const docTemplate = `{
                 }
             }
         },
+        "/goods/shopping-list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Endpoint used to return goods that are running out or expired",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Goods"
+                ],
+                "summary": "Get shopping list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/goods/{id}": {
             "get": {
                 "security": [
@@ -620,7 +645,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "BuyDate",
-                "Categories",
                 "Expire",
                 "Name"
             ],

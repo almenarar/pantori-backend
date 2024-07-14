@@ -52,6 +52,7 @@ func (r *routes) Expose() {
 			goods.GET("", goodsRoutes.ListGoods)
 			goods.GET("/:id", goodsRoutes.GetGood)
 			goods.DELETE("", goodsRoutes.DeleteGood)
+			goods.GET("/shopping-list", goodsRoutes.GetShoppingList)
 		}
 
 		categories := api.Group("/categories", middlewares.AuthorizeRequest(middleware.AuthorizeInput{AdminRequired: false}))

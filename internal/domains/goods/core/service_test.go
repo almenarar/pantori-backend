@@ -291,3 +291,136 @@ func TestDelete(t *testing.T) {
 		})
 	}
 }
+
+type ShoppingListCase struct {
+	Description        string
+	ExistingItems      []core.Good
+	WhenDbErr          error
+	WhenDateFormatErr  error
+	ExpectedError      error
+	ExpectedInvocation string
+	ExpectedOutput     []core.Good
+}
+
+func TestShoppingList(t *testing.T) {
+	testCases := []ShoppingListCase{
+		{
+			Description: "empty list, no errors",
+			ExistingItems: []core.Good{
+				{
+					Name:     "carrot",
+					Expire:   "20/10/2080",
+					Quantity: "Full",
+				},
+				{
+					Name:     "grapes",
+					Expire:   "20/10/2050",
+					Quantity: "Regular",
+				},
+			},
+			WhenDbErr:          nil,
+			WhenDateFormatErr:  nil,
+			ExpectedError:      nil,
+			ExpectedInvocation: "-List",
+			ExpectedOutput:     []core.Good{},
+		},
+		{
+			Description: "list with items, no errors",
+			ExistingItems: []core.Good{
+				{
+					Name:     "carrot",
+					Expire:   "20/10/2080",
+					Quantity: "Empty",
+				},
+				{
+					Name:     "beer",
+					Expire:   "20/10/2050",
+					Quantity: "Regular",
+				},
+				{
+					Name:     "grapes",
+					Expire:   "20/10/2010",
+					Quantity: "Regular",
+				},
+				{
+					Name:       "beans",
+					Expire:     "20/10/2060",
+					OpenExpire: "10/01/2000",
+					Quantity:   "Regular",
+				},
+			},
+			WhenDbErr:          nil,
+			WhenDateFormatErr:  nil,
+			ExpectedError:      nil,
+			ExpectedInvocation: "-List",
+			ExpectedOutput: []core.Good{
+				{
+					Name:     "carrot",
+					Expire:   "20/10/2080",
+					Quantity: "Empty",
+				},
+				{
+					Name:     "grapes",
+					Expire:   "20/10/2010",
+					Quantity: "Regular",
+				},
+				{
+					Name:       "beans",
+					Expire:     "10/01/2000",
+					OpenExpire: "10/01/2000",
+					Quantity:   "Regular",
+				},
+			},
+		},
+		{
+			Description:        "db error",
+			WhenDbErr:          errors.New("some error"),
+			WhenDateFormatErr:  nil,
+			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedInvocation: "-List",
+			ExpectedOutput:     []core.Good{},
+		},
+		{
+			Description: "parse error",
+			ExistingItems: []core.Good{
+				{
+					Expire: "40/40/0",
+				}},
+			WhenDbErr:          nil,
+			WhenDateFormatErr:  errors.New("some error"),
+			ExpectedError:      &core.ErrDateParseError{},
+			ExpectedInvocation: "-List",
+			ExpectedOutput:     []core.Good{},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Description, func(t *testing.T) {
+			assert := assert.New(t)
+			var invocationTrail string
+
+			svc := core.NewService(
+				&mocks.DatabaseMock{
+					ListItemsOutput: testCase.ExistingItems,
+					ErrList:         testCase.WhenDbErr,
+					Invocation:      &invocationTrail,
+				},
+				&mocks.ImageMock{
+					Invocation: &invocationTrail,
+				},
+				&mocks.UtilsMocks{
+					Invocation: &invocationTrail,
+				},
+			)
+
+			output, err := svc.BuildShoppingList("workspace")
+
+			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
+			assert.Equal(testCase.ExpectedOutput, output)
+			assert.IsType(testCase.ExpectedError, err)
+			if err != nil {
+				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			}
+		})
+	}
+}

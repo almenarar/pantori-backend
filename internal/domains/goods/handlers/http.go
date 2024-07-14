@@ -55,6 +55,7 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 		core.Good{
 			Name:       payload.Name,
 			Categories: payload.Categories,
+			Quantity:   payload.Quantity,
 			Workspace:  fmt.Sprint(workspace),
 			Expire:     payload.Expire,
 			BuyDate:    payload.BuyDate,
@@ -112,6 +113,7 @@ func (net *Network) EditGood(ctx *gin.Context) {
 			ID:         payload.ID,
 			Name:       payload.Name,
 			Categories: payload.Categories,
+			Quantity:   payload.Quantity,
 			ImageURL:   payload.ImageURL,
 			Workspace:  fmt.Sprint(workspace),
 			Expire:     payload.Expire,
@@ -281,5 +283,56 @@ func (net *Network) DeleteGood(ctx *gin.Context) {
 	ctx.JSON(
 		http.StatusOK,
 		"Done",
+	)
+}
+
+// PingExample godoc
+// @Summary Get shopping list
+// @Description Endpoint used to return goods that are running out or expired
+// @Tags Goods
+// @Produce json
+// @Success 200 {string} arn
+// @Router /goods/shopping-list [get]
+// @Security ApiKeyAuth
+func (net *Network) GetShoppingList(ctx *gin.Context) {
+	username, exists := ctx.Get("username")
+	if exists && username == "dryrun" {
+		ctx.JSON(
+			http.StatusOK,
+			[]core.Good{
+				{
+					Name:       "dryrun1",
+					Categories: []string{"categoryDR1", "categoryDR2"},
+					Quantity:   "Empty",
+					BuyDate:    "2015/03/01",
+					Expire:     "2015/03/01",
+				},
+				{
+					Name:       "dryrun2",
+					Categories: []string{"categoryDR3", "categoryDR4"},
+					Quantity:   "Low",
+					BuyDate:    "2015/03/01",
+					Expire:     "2015/03/01",
+				},
+			},
+		)
+		return
+	}
+
+	workspace, _ := ctx.Get("workspace")
+	output, err := net.svc.BuildShoppingList(fmt.Sprint(workspace))
+	if err != nil {
+		ctx.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		output,
 	)
 }

@@ -16,3 +16,14 @@ func (r *ErrDbOpFailed) Error() string {
 	log.Error().Stack().Err(r.Inner).Msg("")
 	return technicalError
 }
+
+//-------------------------------------------------------------------------------
+
+type ErrDateParseError struct {
+	Inner error
+}
+
+func (r *ErrDateParseError) Error() string {
+	log.Error().Stack().Err(r.Inner).Msg("")
+	return technicalError
+}

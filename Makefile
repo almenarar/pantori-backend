@@ -19,8 +19,11 @@ integration:
 	go test -coverprofile coverage.out ./internal/auth/infra ./internal/domains/goods/infra ./internal/domains/categories/infra
 	go tool cover -func=coverage.out
 	
-build:
-	docker-compose build
+build-api:
+	docker build -f ./docker/api/Dockerfile --platform=linux/amd64 -t $(API_IMAGE_NAME) .
+
+run-api:
+	docker run --env-file .env -p 8800:8800 pantori-api
 
 build-and-push-api:
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 471112738977.dkr.ecr.us-east-1.amazonaws.com
@@ -33,18 +36,4 @@ build-and-push-notifier:
 	docker build -f ./docker/notifier/Dockerfile --platform=linux/amd64 -t $(NOTIFIER_IMAGE_NAME) .
 	docker tag $(NOTIFIER_IMAGE_NAME):latest 471112738977.dkr.ecr.us-east-1.amazonaws.com/$(NOTIFIER_IMAGE_NAME):$(DOCKER_TAG)
 	docker push 471112738977.dkr.ecr.us-east-1.amazonaws.com/$(NOTIFIER_IMAGE_NAME):$(DOCKER_TAG)
-run:
-	docker-compose up -d
-
-stop:
-	docker-compose down
-
-clean:
-	docker-compose down -v
-	rm -f ./api/your-api-binary
-
-logs-api:
-	docker-compose logs -f pantori
-
-cycle: clean build run logs-api
     
