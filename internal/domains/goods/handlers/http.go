@@ -117,6 +117,7 @@ func (net *Network) EditGood(ctx *gin.Context) {
 			ImageURL:   payload.ImageURL,
 			Workspace:  fmt.Sprint(workspace),
 			Expire:     payload.Expire,
+			OpenExpire: payload.OpenExpire,
 			BuyDate:    payload.BuyDate,
 			CreatedAt:  payload.CreatedAt,
 		},

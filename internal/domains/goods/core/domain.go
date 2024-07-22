@@ -35,8 +35,9 @@ type PatchGood struct {
 	Name       string   `json:"Name" binding:"required"`
 	Categories []string `json:"Categories" binding:"required"`
 	Quantity   string   `json:"Quantity"`
-	ImageURL   string   `json:"ImageURL" binding:"required"`
+	ImageURL   string   `json:"ImageURL"`
 	Expire     string   `json:"Expire" binding:"required"`
+	OpenExpire string   `json:"OpenExpire"`
 	BuyDate    string   `json:"BuyDate" binding:"required"`
 	CreatedAt  string   `json:"CreatedAt" binding:"required"`
 }
