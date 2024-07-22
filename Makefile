@@ -7,6 +7,10 @@ unit:
 	go test -coverprofile coverage.out ./internal/auth/core ./internal/domains/goods/core  ./internal/domains/categories/core  ./internal/domains/notifiers/core
 	go tool cover -func=coverage.out
 
+docker-clean:
+	docker rm $(docker ps -aq)
+	docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
+
 handlers:
 	go test -coverprofile coverage.out ./internal/auth/handlers ./internal/domains/goods/handlers ./internal/domains/categories/handlers
 	go tool cover -func=coverage.out
