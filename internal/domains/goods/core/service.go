@@ -75,6 +75,7 @@ func (svc *service) BuildShoppingList(workspace string) ([]Good, error) {
 	for _, good := range result {
 		if good.Quantity == "Empty" || good.Quantity == "Low" {
 			shoppingList = append(shoppingList, good)
+			continue
 		}
 
 		if good.OpenExpire != "" {
