@@ -71,6 +71,10 @@ definitions:
         type: string
       Name:
         type: string
+      OpenExpire:
+        type: string
+      Quantity:
+        type: string
     required:
     - BuyDate
     - Categories
@@ -101,6 +105,8 @@ definitions:
       Expire:
         type: string
       Name:
+        type: string
+      Quantity:
         type: string
     required:
     - BuyDate

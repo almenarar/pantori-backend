@@ -612,6 +612,12 @@
                 },
                 "Name": {
                     "type": "string"
+                },
+                "OpenExpire": {
+                    "type": "string"
+                },
+                "Quantity": {
+                    "type": "string"
                 }
             }
         },
@@ -651,6 +657,9 @@
                     "type": "string"
                 },
                 "Name": {
+                    "type": "string"
+                },
+                "Quantity": {
                     "type": "string"
                 }
             }

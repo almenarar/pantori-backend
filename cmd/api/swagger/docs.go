@@ -623,6 +623,12 @@ const docTemplate = `{
                 },
                 "Name": {
                     "type": "string"
+                },
+                "OpenExpire": {
+                    "type": "string"
+                },
+                "Quantity": {
+                    "type": "string"
                 }
             }
         },
@@ -662,6 +668,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "Name": {
+                    "type": "string"
+                },
+                "Quantity": {
                     "type": "string"
                 }
             }
