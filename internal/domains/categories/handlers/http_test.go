@@ -6,7 +6,6 @@ import (
 	"pantori/internal/domains/categories/mocks"
 
 	"bytes"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,10 +17,10 @@ import (
 type TestHttpCase struct {
 	Description             string
 	Payload                 []byte
-	ValidateCategoryPayload func(core.Category) error
-	ValidateStrPayload      func(string) error
+	ValidateCategoryPayload func(core.Category) core.DescribedError
+	ValidateStrPayload      func(string) core.DescribedError
 	ShouldBeInvoked         bool
-	WhenError               error
+	WhenError               core.DescribedError
 	Expected                int
 }
 
@@ -33,8 +32,8 @@ func TestCreateCategory(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				if g.Name != "foo" ||
 					g.Color != "bar" ||
 					g.Workspace != "test" {
@@ -49,8 +48,8 @@ func TestCreateCategory(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -58,10 +57,10 @@ func TestCreateCategory(t *testing.T) {
 			Description:        "server error",
 			Payload:            []byte(`{"Name":"foo","Color":"bar"}`),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBCreateFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -71,8 +70,8 @@ func TestCreateCategory(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           400,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -117,8 +116,8 @@ func TestEditCategory(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				if g.Name != "foo" ||
 					g.Color != "bar" ||
 					g.ID != "zerp" ||
@@ -134,8 +133,8 @@ func TestEditCategory(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -143,10 +142,10 @@ func TestEditCategory(t *testing.T) {
 			Description:        "server error",
 			Payload:            []byte(`{"ID":"zerp","Name":"foo","Color":"bar"}`),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBEditFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -156,8 +155,8 @@ func TestEditCategory(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           400,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -202,8 +201,8 @@ func TestDeleteCategory(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				if g.ID != "zerp" ||
 					g.Workspace != "test" {
 					t.Fatalf("unexpected input: %s", g)
@@ -217,8 +216,8 @@ func TestDeleteCategory(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -226,10 +225,10 @@ func TestDeleteCategory(t *testing.T) {
 			Description:        "server error",
 			Payload:            []byte(`{"ID":"zerp"}`),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBDeleteFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -239,8 +238,8 @@ func TestDeleteCategory(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           400,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -285,8 +284,8 @@ func TestCreateDefaultCategories(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				if g.Workspace != "test" {
 					t.Fatalf("unexpected input: %s", g)
 				}
@@ -299,8 +298,8 @@ func TestCreateDefaultCategories(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -308,10 +307,10 @@ func TestCreateDefaultCategories(t *testing.T) {
 			Description:        "server error",
 			Payload:            []byte(``),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBCreateFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -356,8 +355,8 @@ func TestListCategories(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				if g.Workspace != "test" {
 					t.Fatalf("unexpected input: %s", g)
 				}
@@ -370,8 +369,8 @@ func TestListCategories(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},
@@ -379,10 +378,10 @@ func TestListCategories(t *testing.T) {
 			Description:        "server error",
 			Payload:            []byte(``),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBListFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateCategoryPayload: func(g core.Category) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateCategoryPayload: func(g core.Category) core.DescribedError {
 				return nil
 			},
 		},

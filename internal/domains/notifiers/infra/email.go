@@ -3,17 +3,17 @@ package infra
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"pantori/internal/domains/notifiers/core"
 	"text/template"
 
+	"github.com/rs/zerolog/log"
 	"gopkg.in/gomail.v2"
 )
 
 const emailTemplate = `
     <!DOCTYPE html>
     <html>
-   <head>
+    <head>
     <title>Alerta de Vencimento</title>
     <style>
         table {
@@ -36,7 +36,7 @@ const emailTemplate = `
             padding-bottom: 20px;
         }
     </style>
-</head>
+    </head>
     <body>
         <!-- Your exported HTML content here -->
         <div style="text-align: center;">
@@ -126,7 +126,7 @@ func (e *email) SendEmail(user core.User, report core.Report) error {
 
 	tmpl, err := template.New("email").Parse(emailTemplate)
 	if err != nil {
-		log.Fatalf("Failed to parse template: %s", err)
+		return &ErrParseTemplate{err}
 	}
 
 	var bodyContent string
@@ -134,7 +134,7 @@ func (e *email) SendEmail(user core.User, report core.Report) error {
 
 	err = tmpl.Execute(buffer, report)
 	if err != nil {
-		log.Fatalf("Failed to execute template: %s", err)
+		return &ErrFillTemplate{err}
 	}
 	bodyContent = buffer.String()
 
@@ -151,8 +151,8 @@ func (e *email) SendEmail(user core.User, report core.Report) error {
 
 	// Send the email
 	if err := d.DialAndSend(m); err != nil {
-		log.Fatalf("Failed to send email: %s", err)
+		return &ErrSendEmail{err}
 	}
-	fmt.Println("Email sent successfully!")
+	log.Info().Msg(fmt.Sprintf("Email successfully sent to %s", user.Email))
 	return nil
 }

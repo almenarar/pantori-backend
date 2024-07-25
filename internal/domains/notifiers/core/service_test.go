@@ -63,6 +63,18 @@ func TestCreateReport(t *testing.T) {
 			},
 		},
 		{
+			Description: "skip empty goods",
+			InputGoods: []core.Good{
+				{
+					Name:     "fish",
+					Expire:   "01/01/2000",
+					Quantity: "Empty",
+				},
+			},
+			ExpectedLog:    "",
+			ExpectedReport: core.Report{},
+		},
+		{
 			Description: "invalid date",
 			InputGoods: []core.Good{
 				{
@@ -140,7 +152,7 @@ func TestNotify(t *testing.T) {
 			ExpectedInvocation:    "-ListUsers",
 		},
 		{
-			Description:           "list users err",
+			Description:           "get goods err",
 			WhenHaveGoodsToExpire: false,
 			WhenListUserErr:       nil,
 			WhenGetGoodsErr:       errors.New("op failed"),

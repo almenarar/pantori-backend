@@ -1,12 +1,15 @@
 package core_test
 
 import (
+	"bytes"
 	"pantori/internal/auth/core"
 	"pantori/internal/auth/mocks"
 
 	"errors"
 	"testing"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,6 +21,7 @@ type AuthCase struct {
 	WhenCheckPwdErr    error
 	WhenGenTokenErr    error
 	ExpectedToken      string
+	ExpectedLog        string
 	ExpectedError      error
 	ExpectedInvocation string
 }
@@ -32,6 +36,7 @@ func TestAuthenticate(t *testing.T) {
 			WhenCheckPwdErr:    nil,
 			WhenGenTokenErr:    nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedToken:      "token",
 			ExpectedInvocation: "-Get-CheckPwd-GenToken",
 		},
@@ -43,6 +48,7 @@ func TestAuthenticate(t *testing.T) {
 			WhenCheckPwdErr:    nil,
 			WhenGenTokenErr:    nil,
 			ExpectedError:      &core.ErrInvalidLoginInput{},
+			ExpectedLog:        "",
 			ExpectedToken:      "",
 			ExpectedInvocation: "-Get",
 		},
@@ -53,7 +59,8 @@ func TestAuthenticate(t *testing.T) {
 			WhenDbErr:          errors.New("some error"),
 			WhenCheckPwdErr:    nil,
 			WhenGenTokenErr:    nil,
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrGetUserFailed{},
+			ExpectedLog:        "Failure in db when authenticating",
 			ExpectedToken:      "",
 			ExpectedInvocation: "-Get",
 		},
@@ -65,6 +72,7 @@ func TestAuthenticate(t *testing.T) {
 			WhenCheckPwdErr:    errors.New("some error"),
 			WhenGenTokenErr:    nil,
 			ExpectedError:      &core.ErrInvalidLoginInput{},
+			ExpectedLog:        "",
 			ExpectedToken:      "",
 			ExpectedInvocation: "-Get-CheckPwd",
 		},
@@ -75,7 +83,8 @@ func TestAuthenticate(t *testing.T) {
 			WhenDbErr:          nil,
 			WhenCheckPwdErr:    nil,
 			WhenGenTokenErr:    errors.New("some error"),
-			ExpectedError:      &core.ErrCryptoOpFailed{},
+			ExpectedError:      &core.ErrGenTokenFailed{},
+			ExpectedLog:        "Failure in token gen when authenticating:",
 			ExpectedToken:      "",
 			ExpectedInvocation: "-Get-CheckPwd-GenToken",
 		},
@@ -85,6 +94,10 @@ func TestAuthenticate(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.CryptoMock{
@@ -104,11 +117,14 @@ func TestAuthenticate(t *testing.T) {
 
 			token, err := svc.Authenticate(testCase.InputUser)
 
+			logOutput := buf.String()
+
 			assert.Equal(testCase.ExpectedToken, token)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -120,6 +136,7 @@ type CreateUserCase struct {
 	WhenDbErr          error
 	WhenEncryptPwdErr  error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -131,6 +148,7 @@ func TestCreateUser(t *testing.T) {
 			WhenDbErr:          nil,
 			WhenEncryptPwdErr:  nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-GetTime-EncryptPwd-Create",
 		},
 		{
@@ -139,6 +157,7 @@ func TestCreateUser(t *testing.T) {
 			WhenDbErr:          nil,
 			WhenEncryptPwdErr:  nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-GetTime-GenerateID-EncryptPwd-Create",
 		},
 		{
@@ -146,7 +165,8 @@ func TestCreateUser(t *testing.T) {
 			InputUser:          core.User{},
 			WhenDbErr:          nil,
 			WhenEncryptPwdErr:  errors.New(""),
-			ExpectedError:      &core.ErrCryptoOpFailed{},
+			ExpectedError:      &core.ErrEncryptPwdFailed{},
+			ExpectedLog:        "Failure in crypt when creating user",
 			ExpectedInvocation: "-GetTime-GenerateID-EncryptPwd",
 		},
 		{
@@ -154,7 +174,8 @@ func TestCreateUser(t *testing.T) {
 			InputUser:          core.User{},
 			WhenDbErr:          errors.New(""),
 			WhenEncryptPwdErr:  nil,
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBCreateUserFailed{},
+			ExpectedLog:        "Failure in db when creating user",
 			ExpectedInvocation: "-GetTime-GenerateID-EncryptPwd-Create",
 		},
 	}
@@ -163,6 +184,10 @@ func TestCreateUser(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.CryptoMock{
@@ -179,11 +204,13 @@ func TestCreateUser(t *testing.T) {
 			)
 
 			err := svc.CreateUser(testCase.InputUser)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -194,6 +221,7 @@ type DeleteUserCase struct {
 	InputUser          core.User
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -204,13 +232,15 @@ func TestDeleteUser(t *testing.T) {
 			InputUser:          core.User{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-Delete",
 		},
 		{
 			Description:        "db error",
 			InputUser:          core.User{},
 			WhenDbErr:          errors.New(""),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBDeleteUserFailed{},
+			ExpectedLog:        "Failure in db when deleting user:",
 			ExpectedInvocation: "-Delete",
 		},
 	}
@@ -219,6 +249,10 @@ func TestDeleteUser(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.CryptoMock{},
@@ -232,11 +266,13 @@ func TestDeleteUser(t *testing.T) {
 			)
 
 			err := svc.DeleteUser(testCase.InputUser)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -246,6 +282,7 @@ type ListUsersCase struct {
 	Description        string
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -255,12 +292,14 @@ func TestListUsers(t *testing.T) {
 			Description:        "successful run",
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-List",
 		},
 		{
 			Description:        "db error",
 			WhenDbErr:          errors.New(""),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBListUserFailed{},
+			ExpectedLog:        "Failure in db when listing users:",
 			ExpectedInvocation: "-List",
 		},
 	}
@@ -269,6 +308,10 @@ func TestListUsers(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.CryptoMock{},
@@ -282,11 +325,13 @@ func TestListUsers(t *testing.T) {
 			)
 
 			_, err := svc.ListUsers()
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}

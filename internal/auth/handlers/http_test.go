@@ -1,12 +1,12 @@
 package handlers_test
 
 import (
+	"errors"
 	"pantori/internal/auth/core"
 	"pantori/internal/auth/handlers"
 	"pantori/internal/auth/mocks"
 
 	"bytes"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,9 +18,9 @@ import (
 type TestHttpCase struct {
 	Description         string
 	Payload             []byte
-	ValidatePayloadFunc func(core.User) error
+	ValidatePayloadFunc func(core.User) core.DescribedError
 	ShouldBeInvoked     bool
-	WhenError           error
+	WhenError           core.DescribedError
 	Expected            int
 }
 
@@ -32,7 +32,7 @@ func TestLogin(t *testing.T) {
 			ShouldBeInvoked: true,
 			WhenError:       nil,
 			Expected:        200,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				if u.Username != "foo" ||
 					u.GivenPassword != "bar" {
 					t.Fatalf("unexpected input: %s", u)
@@ -44,9 +44,9 @@ func TestLogin(t *testing.T) {
 			Description:     "service failed",
 			Payload:         []byte(`{"username":"foo","password":"bar"}`),
 			ShouldBeInvoked: true,
-			WhenError:       errors.New("some error"),
+			WhenError:       &core.ErrGenTokenFailed{Err: errors.New("something")},
 			Expected:        500,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -54,9 +54,9 @@ func TestLogin(t *testing.T) {
 			Description:     "invalid payload",
 			Payload:         []byte(`{"testing":"testing"}`),
 			ShouldBeInvoked: false,
-			WhenError:       errors.New("some error"),
+			WhenError:       nil,
 			Expected:        400,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -64,9 +64,9 @@ func TestLogin(t *testing.T) {
 			Description:     "wrong password",
 			Payload:         []byte(`{"username":"foo","password":"bar"}`),
 			ShouldBeInvoked: true,
-			WhenError:       &core.ErrInvalidLoginInput{},
+			WhenError:       &core.ErrInvalidLoginInput{Err: errors.New("something")},
 			Expected:        400,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -104,7 +104,7 @@ func TestCreateUser(t *testing.T) {
 			ShouldBeInvoked: true,
 			WhenError:       nil,
 			Expected:        200,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				if u.Username != "foo" ||
 					u.GivenPassword != "bar" ||
 					u.Workspace != "principal" ||
@@ -118,9 +118,9 @@ func TestCreateUser(t *testing.T) {
 			Description:     "service failed",
 			Payload:         []byte(`{"username":"foo","password":"bar","workspace":"principal","email":"john.doe@mail.com"}`),
 			ShouldBeInvoked: true,
-			WhenError:       errors.New("some error"),
+			WhenError:       &core.ErrDBCreateUserFailed{Err: errors.New("something")},
 			Expected:        500,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -128,9 +128,9 @@ func TestCreateUser(t *testing.T) {
 			Description:     "invalid payload",
 			Payload:         []byte(`{"testing":"testing"}`),
 			ShouldBeInvoked: false,
-			WhenError:       errors.New("some error"),
+			WhenError:       nil,
 			Expected:        400,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -168,7 +168,7 @@ func TestDeleteUser(t *testing.T) {
 			ShouldBeInvoked: true,
 			WhenError:       nil,
 			Expected:        200,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				if u.Username != "foo" {
 					t.Fatalf("unexpected input: %s", u)
 				}
@@ -179,9 +179,9 @@ func TestDeleteUser(t *testing.T) {
 			Description:     "service failed",
 			Payload:         []byte(`{"username":"foo"}`),
 			ShouldBeInvoked: true,
-			WhenError:       errors.New("some error"),
+			WhenError:       &core.ErrDBDeleteUserFailed{Err: errors.New("something")},
 			Expected:        500,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -189,9 +189,9 @@ func TestDeleteUser(t *testing.T) {
 			Description:     "invalid payload",
 			Payload:         []byte(`{"testing":"testing"}`),
 			ShouldBeInvoked: false,
-			WhenError:       errors.New("some error"),
+			WhenError:       nil,
 			Expected:        400,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},
@@ -229,7 +229,7 @@ func TestListUsers(t *testing.T) {
 			ShouldBeInvoked: true,
 			WhenError:       nil,
 			Expected:        200,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				if u.Username != "foo" {
 					t.Fatalf("unexpected input: %s", u)
 				}
@@ -240,9 +240,9 @@ func TestListUsers(t *testing.T) {
 			Description:     "service failed",
 			Payload:         []byte(``),
 			ShouldBeInvoked: true,
-			WhenError:       errors.New("some error"),
+			WhenError:       &core.ErrDBListUserFailed{Err: errors.New("something")},
 			Expected:        500,
-			ValidatePayloadFunc: func(u core.User) error {
+			ValidatePayloadFunc: func(u core.User) core.DescribedError {
 				return nil
 			},
 		},

@@ -6,7 +6,6 @@ import (
 	"pantori/internal/domains/goods/mocks"
 
 	"bytes"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,10 +17,10 @@ import (
 type TestHttpCase struct {
 	Description         string
 	Payload             []byte
-	ValidateGoodPayload func(core.Good) error
-	ValidateStrPayload  func(string) error
+	ValidateGoodPayload func(core.Good) core.DescribedError
+	ValidateStrPayload  func(string) core.DescribedError
 	ShouldBeInvoked     bool
-	WhenError           error
+	WhenError           core.DescribedError
 	Expected            int
 }
 
@@ -33,8 +32,8 @@ func TestCreateGood(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				if g.Name != "foo" ||
 					g.Categories[0] != "bar" ||
 					g.Workspace != "main" ||
@@ -51,19 +50,19 @@ func TestCreateGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
 		{
-			Description:        "server error",
+			Description:        "server core.DescribedError",
 			Payload:            []byte(`{"Name":"foo","Categories":["bar","zep"],"Workspace":"main","Expire":"20/12/2032","BuyDate":"24/12/2032"}`),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBCreateFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -73,8 +72,8 @@ func TestCreateGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           400,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -119,8 +118,8 @@ func TestEditGood(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				if g.ID != "01" ||
 					g.Name != "foo" ||
 					g.Categories[0] != "bar" ||
@@ -140,19 +139,19 @@ func TestEditGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
 		{
-			Description:        "server error",
+			Description:        "server core.DescribedError",
 			Payload:            []byte(`{"ID":"01","Name":"foo","Categories":["bar","zep"],"ImageURL":"http://pov.com","Workspace":"main","Expire":"20/12/2032","BuyDate":"24/12/2032","CreatedAt":"30/01/1996"}`),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBEditFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -162,8 +161,8 @@ func TestEditGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           400,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -208,8 +207,8 @@ func TestDeleteGood(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				if g.ID != "01" ||
 					g.Workspace != "main" {
 					t.Fatalf("unexpected input: %s", g)
@@ -223,19 +222,19 @@ func TestDeleteGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
 		{
-			Description:        "server error",
+			Description:        "server core.DescribedError",
 			Payload:            []byte(`{"ID":"01"}`),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBDeleteFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -245,8 +244,8 @@ func TestDeleteGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           400,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -291,8 +290,8 @@ func TestGetGood(t *testing.T) {
 			ShouldBeInvoked:    true,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				if g.ID != "foo" {
 					t.Fatalf("unexpected input: %s", g)
 				}
@@ -305,19 +304,19 @@ func TestGetGood(t *testing.T) {
 			ShouldBeInvoked:    false,
 			WhenError:          nil,
 			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
 		{
-			Description:        "server error",
+			Description:        "server core.DescribedError",
 			Payload:            []byte(``),
 			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
+			WhenError:          &core.ErrDBGetFailed{},
 			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
+			ValidateStrPayload: func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError {
 				return nil
 			},
 		},
@@ -357,40 +356,31 @@ func TestGetGood(t *testing.T) {
 func TestListGood(t *testing.T) {
 	testCases := []TestHttpCase{
 		{
-			Description:        "successfull http request",
-			Payload:            []byte(``),
-			ShouldBeInvoked:    true,
-			WhenError:          nil,
-			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
-				if g.ID != "01" {
-					t.Fatalf("unexpected input: %s", g)
-				}
-				return nil
-			},
+			Description:         "successfull http request",
+			Payload:             []byte(``),
+			ShouldBeInvoked:     true,
+			WhenError:           nil,
+			Expected:            200,
+			ValidateStrPayload:  func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError { return nil },
 		},
 		{
-			Description:        "dryrun",
-			Payload:            []byte(``),
-			ShouldBeInvoked:    false,
-			WhenError:          nil,
-			Expected:           200,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
-				return nil
-			},
+			Description:         "dryrun",
+			Payload:             []byte(``),
+			ShouldBeInvoked:     false,
+			WhenError:           nil,
+			Expected:            200,
+			ValidateStrPayload:  func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError { return nil },
 		},
 		{
-			Description:        "server error",
-			Payload:            []byte(``),
-			ShouldBeInvoked:    true,
-			WhenError:          errors.New(""),
-			Expected:           500,
-			ValidateStrPayload: func(s string) error { return nil },
-			ValidateGoodPayload: func(g core.Good) error {
-				return nil
-			},
+			Description:         "server core.DescribedError",
+			Payload:             []byte(``),
+			ShouldBeInvoked:     true,
+			WhenError:           &core.ErrDBListFailed{},
+			Expected:            500,
+			ValidateStrPayload:  func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError { return nil },
 		},
 	}
 
@@ -418,6 +408,67 @@ func TestListGood(t *testing.T) {
 			}
 
 			h.ListGoods(c)
+			assert.Equal(testCase.ShouldBeInvoked, svc.Invoked)
+			assert.Equal(testCase.Expected, w.Code)
+		})
+	}
+}
+
+func TestShoppingList(t *testing.T) {
+	testCases := []TestHttpCase{
+		{
+			Description:         "successfull http request",
+			Payload:             []byte(``),
+			ShouldBeInvoked:     true,
+			WhenError:           nil,
+			Expected:            200,
+			ValidateStrPayload:  func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError { return nil },
+		},
+		{
+			Description:         "dryrun",
+			Payload:             []byte(``),
+			ShouldBeInvoked:     false,
+			WhenError:           nil,
+			Expected:            200,
+			ValidateStrPayload:  func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError { return nil },
+		},
+		{
+			Description:         "server core.DescribedError",
+			Payload:             []byte(``),
+			ShouldBeInvoked:     true,
+			WhenError:           &core.ErrShopDBListFailed{},
+			Expected:            500,
+			ValidateStrPayload:  func(s string) core.DescribedError { return nil },
+			ValidateGoodPayload: func(g core.Good) core.DescribedError { return nil },
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Description, func(t *testing.T) {
+			assert := assert.New(t)
+			svc := mocks.Service{
+				AnalyzeStr:  testCase.ValidateStrPayload,
+				AnalyzeGood: testCase.ValidateGoodPayload,
+				Err:         testCase.WhenError,
+			}
+			h := handlers.NewNetwork(&svc)
+
+			var err error
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			if testCase.Description == "dryrun" {
+				c.Set("username", "dryrun")
+			}
+
+			c.Request, err = http.NewRequest(http.MethodGet, "/", bytes.NewBuffer(testCase.Payload))
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
+
+			h.GetShoppingList(c)
 			assert.Equal(testCase.ShouldBeInvoked, svc.Invoked)
 			assert.Equal(testCase.Expected, w.Code)
 		})

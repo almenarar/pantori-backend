@@ -1,6 +1,10 @@
 package core
 
-import "time"
+import (
+	"time"
+
+	"github.com/rs/zerolog/log"
+)
 
 type service struct {
 	db DatabasePort
@@ -16,7 +20,7 @@ func NewService(db DatabasePort, im ImagePort, ut UtilsPort) *service {
 	}
 }
 
-func (svc *service) AddGood(good Good) error {
+func (svc *service) AddGood(good Good) DescribedError {
 	// a fail here is not critical, will only log
 	good.ImageURL = svc.im.GetImageURL(good.Name)
 
@@ -25,51 +29,57 @@ func (svc *service) AddGood(good Good) error {
 
 	err := svc.db.CreateItem(good)
 	if err != nil {
-		return &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBCreateFailed{err}).Msg("")
+		return &ErrDBCreateFailed{err}
 	}
 	return nil
 }
 
-func (svc *service) EditGood(good Good) error {
+func (svc *service) EditGood(good Good) DescribedError {
 	good.UpdatedAt = svc.ut.GetCurrentTime()
 
 	err := svc.db.EditItem(good)
 	if err != nil {
-		return &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBEditFailed{err}).Msg("")
+		return &ErrDBEditFailed{err}
 	}
 	return nil
 }
 
-func (svc *service) GetGood(good Good) (Good, error) {
+func (svc *service) GetGood(good Good) (Good, DescribedError) {
 	result, err := svc.db.GetItemByID(good)
 	if err != nil {
-		return Good{}, &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBGetFailed{err}).Msg("")
+		return Good{}, &ErrDBGetFailed{err}
 	}
 	return result, nil
 }
 
-func (svc *service) ListGoods(workspace string) ([]Good, error) {
+func (svc *service) ListGoods(workspace string) ([]Good, DescribedError) {
 	result, err := svc.db.GetAllItems(workspace)
 	if err != nil {
-		return []Good{}, &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBListFailed{err}).Msg("")
+		return []Good{}, &ErrDBListFailed{err}
 	}
 	return result, nil
 }
 
-func (svc *service) DeleteGood(good Good) error {
+func (svc *service) DeleteGood(good Good) DescribedError {
 	err := svc.db.DeleteItem(good)
 	if err != nil {
-		return &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBDeleteFailed{err}).Msg("")
+		return &ErrDBDeleteFailed{err}
 	}
 	return nil
 }
 
-func (svc *service) BuildShoppingList(workspace string) ([]Good, error) {
+func (svc *service) BuildShoppingList(workspace string) ([]Good, DescribedError) {
 	shoppingList := []Good{}
 
 	result, err := svc.db.GetAllItems(workspace)
 	if err != nil {
-		return []Good{}, &ErrDbOpFailed{err}
+		log.Error().Err(&ErrShopDBListFailed{err}).Msg("")
+		return []Good{}, &ErrShopDBListFailed{err}
 	}
 
 	for _, good := range result {
@@ -83,7 +93,8 @@ func (svc *service) BuildShoppingList(workspace string) ([]Good, error) {
 		}
 		expired, err := svc.isExpired(good.Expire)
 		if err != nil {
-			return []Good{}, &ErrDateParseError{err}
+			log.Error().Err(&ErrShopParseDateFailed{err}).Msg("")
+			return []Good{}, &ErrShopParseDateFailed{err}
 		}
 		if expired {
 			shoppingList = append(shoppingList, good)

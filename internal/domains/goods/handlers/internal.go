@@ -29,6 +29,7 @@ func (int *Internal) GetGoodsFromWorkspace(workspace string) ([]notifiers.Good, 
 		output = append(output, notifiers.Good{
 			Name:      good.Name,
 			Workspace: good.Workspace,
+			Quantity:  good.Quantity,
 			Expire:    good.Expire,
 		})
 	}

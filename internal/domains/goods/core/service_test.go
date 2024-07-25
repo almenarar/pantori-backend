@@ -1,12 +1,15 @@
 package core_test
 
 import (
+	"bytes"
 	"errors"
 	"pantori/internal/domains/goods/core"
 	"pantori/internal/domains/goods/mocks"
 
 	"testing"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,6 +18,7 @@ type AddCase struct {
 	InputGood          core.Good
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -25,13 +29,15 @@ func TestAdd(t *testing.T) {
 			InputGood:          core.Good{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-GetImage-GenerateID-GetTime-Add",
 		},
 		{
 			Description:        "db error",
 			InputGood:          core.Good{},
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBCreateFailed{},
+			ExpectedLog:        "Failure in db when creating good:",
 			ExpectedInvocation: "-GetImage-GenerateID-GetTime-Add",
 		},
 	}
@@ -40,6 +46,10 @@ func TestAdd(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -55,11 +65,13 @@ func TestAdd(t *testing.T) {
 			)
 
 			err := svc.AddGood(testCase.InputGood)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -70,6 +82,7 @@ type EditCase struct {
 	InputGood          core.Good
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -80,13 +93,15 @@ func TestEdit(t *testing.T) {
 			InputGood:          core.Good{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-GetTime-Edit",
 		},
 		{
 			Description:        "db error",
 			InputGood:          core.Good{},
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBEditFailed{},
+			ExpectedLog:        "Failure in db when editing good:",
 			ExpectedInvocation: "-GetTime-Edit",
 		},
 	}
@@ -95,6 +110,10 @@ func TestEdit(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -110,11 +129,13 @@ func TestEdit(t *testing.T) {
 			)
 
 			err := svc.EditGood(testCase.InputGood)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -125,6 +146,7 @@ type GetCase struct {
 	InputGood          core.Good
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedReturn     core.Good
 	ExpectedInvocation string
 }
@@ -135,13 +157,15 @@ func TestGet(t *testing.T) {
 			Description:        "successfull list",
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedReturn:     core.Good{ID: "foo"},
 			ExpectedInvocation: "-Get",
 		},
 		{
 			Description:        "db error",
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBGetFailed{},
+			ExpectedLog:        "Failure in db when getting goods:",
 			ExpectedReturn:     core.Good{},
 			ExpectedInvocation: "-Get",
 		},
@@ -151,6 +175,10 @@ func TestGet(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -166,12 +194,14 @@ func TestGet(t *testing.T) {
 			)
 
 			out, err := svc.GetGood(testCase.InputGood)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedReturn, out)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -182,6 +212,7 @@ type ListCase struct {
 	InputGood          core.Good
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedReturn     []core.Good
 	ExpectedInvocation string
 }
@@ -192,6 +223,7 @@ func TestList(t *testing.T) {
 			Description:   "successfull list",
 			WhenDbErr:     nil,
 			ExpectedError: nil,
+			ExpectedLog:   "",
 			ExpectedReturn: []core.Good{
 				{ID: "foo"},
 				{ID: "bar"},
@@ -201,7 +233,8 @@ func TestList(t *testing.T) {
 		{
 			Description:        "db error",
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBListFailed{},
+			ExpectedLog:        "Failure in db when listing goods:",
 			ExpectedReturn:     []core.Good{},
 			ExpectedInvocation: "-List",
 		},
@@ -211,6 +244,10 @@ func TestList(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -226,12 +263,14 @@ func TestList(t *testing.T) {
 			)
 
 			out, err := svc.ListGoods(testCase.InputGood.Workspace)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedReturn, out)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -242,6 +281,7 @@ type DeleteCase struct {
 	InputGood          core.Good
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -252,13 +292,15 @@ func TestDelete(t *testing.T) {
 			InputGood:          core.Good{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-Delete",
 		},
 		{
 			Description:        "db error",
 			InputGood:          core.Good{},
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBDeleteFailed{},
+			ExpectedLog:        "Failure in db when deleting goods:",
 			ExpectedInvocation: "-Delete",
 		},
 	}
@@ -267,6 +309,10 @@ func TestDelete(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -282,11 +328,13 @@ func TestDelete(t *testing.T) {
 			)
 
 			err := svc.DeleteGood(testCase.InputGood)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -298,6 +346,7 @@ type ShoppingListCase struct {
 	WhenDbErr          error
 	WhenDateFormatErr  error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 	ExpectedOutput     []core.Good
 }
@@ -321,6 +370,7 @@ func TestShoppingList(t *testing.T) {
 			WhenDbErr:          nil,
 			WhenDateFormatErr:  nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-List",
 			ExpectedOutput:     []core.Good{},
 		},
@@ -340,7 +390,7 @@ func TestShoppingList(t *testing.T) {
 				{
 					Name:     "grapes",
 					Expire:   "20/10/2010",
-					Quantity: "Regular",
+					Quantity: "Low",
 				},
 				{
 					Name:       "beans",
@@ -352,6 +402,7 @@ func TestShoppingList(t *testing.T) {
 			WhenDbErr:          nil,
 			WhenDateFormatErr:  nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-List",
 			ExpectedOutput: []core.Good{
 				{
@@ -362,7 +413,7 @@ func TestShoppingList(t *testing.T) {
 				{
 					Name:     "grapes",
 					Expire:   "20/10/2010",
-					Quantity: "Regular",
+					Quantity: "Low",
 				},
 				{
 					Name:       "beans",
@@ -376,7 +427,8 @@ func TestShoppingList(t *testing.T) {
 			Description:        "db error",
 			WhenDbErr:          errors.New("some error"),
 			WhenDateFormatErr:  nil,
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrShopDBListFailed{},
+			ExpectedLog:        "Failure in db when listing goods for shopping list:",
 			ExpectedInvocation: "-List",
 			ExpectedOutput:     []core.Good{},
 		},
@@ -388,7 +440,8 @@ func TestShoppingList(t *testing.T) {
 				}},
 			WhenDbErr:          nil,
 			WhenDateFormatErr:  errors.New("some error"),
-			ExpectedError:      &core.ErrDateParseError{},
+			ExpectedError:      &core.ErrShopParseDateFailed{},
+			ExpectedLog:        "Failure parsing date when building shopping list:",
 			ExpectedInvocation: "-List",
 			ExpectedOutput:     []core.Good{},
 		},
@@ -398,6 +451,10 @@ func TestShoppingList(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -414,12 +471,14 @@ func TestShoppingList(t *testing.T) {
 			)
 
 			output, err := svc.BuildShoppingList("workspace")
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.Equal(testCase.ExpectedOutput, output)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}

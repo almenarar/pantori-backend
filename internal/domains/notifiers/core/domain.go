@@ -3,6 +3,7 @@ package core
 type Good struct {
 	Name      string
 	Workspace string
+	Quantity  string
 	Expire    string
 }
 

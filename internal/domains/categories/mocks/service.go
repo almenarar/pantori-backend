@@ -3,13 +3,13 @@ package mocks
 import "pantori/internal/domains/categories/core"
 
 type Service struct {
-	AnalyzeStr      func(string) error
-	AnalyzeCategory func(core.Category) error
+	AnalyzeStr      func(string) core.DescribedError
+	AnalyzeCategory func(core.Category) core.DescribedError
 	Invoked         bool
-	Err             error
+	Err             core.DescribedError
 }
 
-func (svc *Service) CreateDefaultCategories(workspace string) error {
+func (svc *Service) CreateDefaultCategories(workspace string) core.DescribedError {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return svc.Err
@@ -17,7 +17,7 @@ func (svc *Service) CreateDefaultCategories(workspace string) error {
 	return svc.AnalyzeStr(workspace)
 }
 
-func (svc *Service) CreateCategory(category core.Category) error {
+func (svc *Service) CreateCategory(category core.Category) core.DescribedError {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return svc.Err
@@ -25,7 +25,7 @@ func (svc *Service) CreateCategory(category core.Category) error {
 	return svc.AnalyzeCategory(category)
 }
 
-func (svc *Service) ListCategories(workspace string) ([]core.Category, error) {
+func (svc *Service) ListCategories(workspace string) ([]core.Category, core.DescribedError) {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return []core.Category{}, svc.Err
@@ -33,7 +33,7 @@ func (svc *Service) ListCategories(workspace string) ([]core.Category, error) {
 	return []core.Category{}, svc.AnalyzeStr(workspace)
 }
 
-func (svc *Service) EditCategory(category core.Category) error {
+func (svc *Service) EditCategory(category core.Category) core.DescribedError {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return svc.Err
@@ -41,7 +41,7 @@ func (svc *Service) EditCategory(category core.Category) error {
 	return svc.AnalyzeCategory(category)
 }
 
-func (svc *Service) DeleteCategory(category core.Category) error {
+func (svc *Service) DeleteCategory(category core.Category) core.DescribedError {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return svc.Err

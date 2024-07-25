@@ -23,7 +23,7 @@ func NewCryptography(jwtKey string) *cryptography {
 func (c *cryptography) EncryptPassword(pwd string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return "", &ErrEncryptPwdFailed{err}
 	}
 	return string(bytes), nil
 }
@@ -31,7 +31,7 @@ func (c *cryptography) EncryptPassword(pwd string) (string, error) {
 func (c *cryptography) CheckPassword(stored, given string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(stored), []byte(given))
 	if err != nil {
-		return err
+		return &ErrCheckPwdFailed{err}
 	}
 	return nil
 }
@@ -49,7 +49,7 @@ func (c *cryptography) GenerateToken(user core.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(c.jwtKey))
 	if err != nil {
-		return "", err
+		return "", &ErrGenTokenFailed{err}
 	}
 
 	return signedToken, nil

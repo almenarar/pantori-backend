@@ -28,7 +28,7 @@ func LoadWorkerNumFromEnv() int {
 		return viper.GetInt("notifier_worker_num")
 	}
 
-	log.Panic().Stack().Err(errors.New("jwt key undefined")).Msg("")
+	log.Panic().Stack().Err(errors.New("NOTIFIER_WORKER_NUM undefined")).Msg("")
 	return 0
 }
 
@@ -39,14 +39,14 @@ func LoadEmailAuthFromEnv() infra.EmailAuth {
 	if viper.IsSet("email_email") {
 		output.Email = viper.GetString("email_email")
 	} else {
-		log.Panic().Stack().Err(errors.New("email email undefined")).Msg("")
+		log.Panic().Stack().Err(errors.New("EMAIL_PROVIDER_EMAIL undefined")).Msg("")
 	}
 
 	viper.BindEnv("email_password", "EMAIL_PROVIDER_PASSWORD")
 	if viper.IsSet("email_password") {
 		output.Password = viper.GetString("email_password")
 	} else {
-		log.Panic().Stack().Err(errors.New("email password undefined")).Msg("")
+		log.Panic().Stack().Err(errors.New("EMAIL_PROVIDER_PASSWORD undefined")).Msg("")
 	}
 	return output
 }

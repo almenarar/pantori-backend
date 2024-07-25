@@ -3,12 +3,12 @@ package mocks
 import "pantori/internal/auth/core"
 
 type Service struct {
-	CustomFunc func(core.User) error
+	CustomFunc func(core.User) core.DescribedError
 	Invoked    bool
-	Err        error
+	Err        core.DescribedError
 }
 
-func (svc *Service) Authenticate(user core.User) (string, error) {
+func (svc *Service) Authenticate(user core.User) (string, core.DescribedError) {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return "", svc.Err
@@ -16,7 +16,7 @@ func (svc *Service) Authenticate(user core.User) (string, error) {
 	return "token", svc.CustomFunc(user)
 }
 
-func (svc *Service) CreateUser(core.User) error {
+func (svc *Service) CreateUser(core.User) core.DescribedError {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return svc.Err
@@ -24,7 +24,7 @@ func (svc *Service) CreateUser(core.User) error {
 	return nil
 }
 
-func (svc *Service) DeleteUser(core.User) error {
+func (svc *Service) DeleteUser(core.User) core.DescribedError {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return svc.Err
@@ -32,10 +32,10 @@ func (svc *Service) DeleteUser(core.User) error {
 	return nil
 }
 
-func (svc *Service) ListUsers() ([]core.User, error) {
+func (svc *Service) ListUsers() ([]core.User, core.DescribedError) {
 	svc.Invoked = true
 	if svc.Err != nil {
 		return []core.User{}, svc.Err
 	}
-	return []core.User{{Username: "john"}}, nil
+	return []core.User{{Username: "john", Workspace: "wkp1"}}, nil
 }

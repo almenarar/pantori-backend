@@ -29,15 +29,16 @@ func NewNetwork(svc core.ServicePort) *Network {
 // @Success 200 {string} jwt
 // @Router /login [post]
 func (net *Network) Login(ctx *gin.Context) {
+	var err core.DescribedError
+
 	userLogin := core.UserLogin{}
 	if err := ctx.ShouldBindJSON(&userLogin); err != nil {
-		log.Error().Stack().Msg(err.Error())
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "username or password field are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/login")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -52,7 +53,7 @@ func (net *Network) Login(ctx *gin.Context) {
 		ctx.JSON(
 			statusCode,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -77,13 +78,12 @@ func (net *Network) Login(ctx *gin.Context) {
 func (net *Network) CreateUser(ctx *gin.Context) {
 	user := core.CreateUser{}
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		log.Error().Stack().Msg(err.Error())
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/create-user")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -125,13 +125,12 @@ func (net *Network) CreateUser(ctx *gin.Context) {
 func (net *Network) DeleteUser(ctx *gin.Context) {
 	user := core.DeleteUser{}
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		log.Error().Stack().Msg(err.Error())
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/delete-user")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 

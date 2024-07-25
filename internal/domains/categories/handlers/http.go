@@ -7,6 +7,7 @@ import (
 	"pantori/internal/domains/categories/core"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 type Network struct {
@@ -32,12 +33,12 @@ func NewNetwork(svc core.ServicePort) *Network {
 func (net *Network) CreateCategory(ctx *gin.Context) {
 	payload := core.PostCategory{}
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/create-category")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -61,7 +62,7 @@ func (net *Network) CreateCategory(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -97,7 +98,7 @@ func (net *Network) CreateDefaultCategories(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -122,12 +123,12 @@ func (net *Network) CreateDefaultCategories(ctx *gin.Context) {
 func (net *Network) DeleteCategory(ctx *gin.Context) {
 	payload := core.DeleteCategory{}
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/delete-category")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -150,7 +151,7 @@ func (net *Network) DeleteCategory(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -175,12 +176,12 @@ func (net *Network) DeleteCategory(ctx *gin.Context) {
 func (net *Network) EditCategory(ctx *gin.Context) {
 	payload := core.PatchCategory{}
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/edit-category")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -205,7 +206,7 @@ func (net *Network) EditCategory(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -250,7 +251,7 @@ func (net *Network) ListCategories(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return

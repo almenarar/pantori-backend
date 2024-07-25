@@ -14,7 +14,7 @@ func NewInternal() *handlers.Internal {
 	return handlers.NewInternal(genService())
 }
 
-func New() *handlers.Network {
+func NewNetworkHandler() *handlers.Network {
 	return handlers.NewNetwork(genService())
 }
 
@@ -53,7 +53,7 @@ func LoadKeyFromEnv() string {
 		return viper.GetString("jwt_key")
 	}
 
-	log.Panic().Stack().Err(errors.New("jwt key undefined")).Msg("")
+	log.Panic().Stack().Err(errors.New("JWT_KEY undefined")).Msg("")
 
 	return ""
 }

@@ -1,6 +1,7 @@
 package core_test
 
 import (
+	"bytes"
 	"errors"
 	"pantori/internal/domains/categories/core"
 	"pantori/internal/domains/categories/mocks"
@@ -8,6 +9,8 @@ import (
 
 	"testing"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,6 +19,7 @@ type AddCase struct {
 	InputCategory      core.Category
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -26,13 +30,15 @@ func TestAdd(t *testing.T) {
 			InputCategory:      core.Category{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-GenerateID-GetTime-Add",
 		},
 		{
 			Description:        "db error",
 			InputCategory:      core.Category{},
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBCreateFailed{},
+			ExpectedLog:        "Failure in db when creating category:",
 			ExpectedInvocation: "-GenerateID-GetTime-Add",
 		},
 	}
@@ -41,6 +47,10 @@ func TestAdd(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -53,11 +63,13 @@ func TestAdd(t *testing.T) {
 			)
 
 			err := svc.CreateCategory(testCase.InputCategory)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -70,6 +82,7 @@ type AddDefaultCase struct {
 	ExpectedLastCategoryName  string
 	ExpectedLastCategoryColor string
 	ExpectedError             error
+	ExpectedLog               string
 	ExpectedInvocation        string
 }
 
@@ -82,6 +95,7 @@ func TestDefaultAdd(t *testing.T) {
 			ExpectedLastCategoryName:  "Outros",
 			ExpectedLastCategoryColor: "FF92664A",
 			ExpectedError:             nil,
+			ExpectedLog:               "",
 			ExpectedInvocation:        strings.Repeat("-GenerateID-GetTime-Add", 7),
 		},
 		{
@@ -90,7 +104,8 @@ func TestDefaultAdd(t *testing.T) {
 			WhenDbErr:                 errors.New("some error"),
 			ExpectedLastCategoryName:  "",
 			ExpectedLastCategoryColor: "",
-			ExpectedError:             &core.ErrDbOpFailed{},
+			ExpectedError:             &core.ErrDBCreateFailed{},
+			ExpectedLog:               "Failure in db when creating category:",
 			ExpectedInvocation:        "-GenerateID-GetTime-Add",
 		},
 	}
@@ -99,6 +114,11 @@ func TestDefaultAdd(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
+
 			db := &mocks.DatabaseMock{
 				ErrAdd:     testCase.WhenDbErr,
 				Invocation: &invocationTrail,
@@ -112,15 +132,18 @@ func TestDefaultAdd(t *testing.T) {
 			)
 
 			err := svc.CreateDefaultCategories(testCase.Input)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
-			} else {
+
+			if err == nil {
 				assert.Len(db.CreatedItems, 7)
 				assert.Equal(testCase.ExpectedLastCategoryName, db.CreatedItems[6].Name)
 				assert.Equal(testCase.ExpectedLastCategoryColor, db.CreatedItems[6].Color)
+			} else {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -131,6 +154,7 @@ type EditCase struct {
 	InputCategory      core.Category
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -141,13 +165,15 @@ func TestEdit(t *testing.T) {
 			InputCategory:      core.Category{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-GetTime-Edit",
 		},
 		{
 			Description:        "db error",
 			InputCategory:      core.Category{},
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBEditFailed{},
+			ExpectedLog:        "Failure in db when editing category:",
 			ExpectedInvocation: "-GetTime-Edit",
 		},
 	}
@@ -156,6 +182,10 @@ func TestEdit(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -168,11 +198,13 @@ func TestEdit(t *testing.T) {
 			)
 
 			err := svc.EditCategory(testCase.InputCategory)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -183,6 +215,7 @@ type DeleteCase struct {
 	InputCategory      core.Category
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedInvocation string
 }
 
@@ -193,13 +226,15 @@ func TestDelete(t *testing.T) {
 			InputCategory:      core.Category{},
 			WhenDbErr:          nil,
 			ExpectedError:      nil,
+			ExpectedLog:        "",
 			ExpectedInvocation: "-Delete",
 		},
 		{
 			Description:        "db error",
 			InputCategory:      core.Category{},
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBDeleteFailed{},
+			ExpectedLog:        "Failure in db when deleting category:",
 			ExpectedInvocation: "-Delete",
 		},
 	}
@@ -208,6 +243,10 @@ func TestDelete(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -220,11 +259,13 @@ func TestDelete(t *testing.T) {
 			)
 
 			err := svc.DeleteCategory(testCase.InputCategory)
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}
@@ -234,6 +275,7 @@ type ListCase struct {
 	Description        string
 	WhenDbErr          error
 	ExpectedError      error
+	ExpectedLog        string
 	ExpectedReturn     []core.Category
 	ExpectedInvocation string
 }
@@ -244,6 +286,7 @@ func TestList(t *testing.T) {
 			Description:   "successfull list",
 			WhenDbErr:     nil,
 			ExpectedError: nil,
+			ExpectedLog:   "",
 			ExpectedReturn: []core.Category{
 				{ID: "foo"},
 				{ID: "bar"},
@@ -253,7 +296,8 @@ func TestList(t *testing.T) {
 		{
 			Description:        "db error",
 			WhenDbErr:          errors.New("some error"),
-			ExpectedError:      &core.ErrDbOpFailed{},
+			ExpectedError:      &core.ErrDBListFailed{},
+			ExpectedLog:        "Failure in db when listing category:",
 			ExpectedReturn:     []core.Category{},
 			ExpectedInvocation: "-List",
 		},
@@ -263,6 +307,10 @@ func TestList(t *testing.T) {
 		t.Run(testCase.Description, func(t *testing.T) {
 			assert := assert.New(t)
 			var invocationTrail string
+
+			var buf bytes.Buffer
+			globalLogger := zerolog.New(&buf).With().Timestamp().Logger()
+			log.Logger = globalLogger
 
 			svc := core.NewService(
 				&mocks.DatabaseMock{
@@ -275,12 +323,15 @@ func TestList(t *testing.T) {
 			)
 
 			out, err := svc.ListCategories("workspace")
+			logOutput := buf.String()
 
 			assert.Equal(testCase.ExpectedReturn, out)
 			assert.Equal(testCase.ExpectedInvocation, invocationTrail)
 			assert.IsType(testCase.ExpectedError, err)
-			if err != nil {
-				assert.Equal(testCase.ExpectedError.Error(), err.Error())
+
+			if testCase.ExpectedError != nil {
+				assert.Contains(logOutput, testCase.ExpectedLog)
+				assert.NotEmpty(err.PublicMessage())
 			}
 		})
 	}

@@ -70,8 +70,8 @@ func (svc *Service) worker(users []User) {
 	}
 
 	report := svc.CreateReport(goods)
-	for _, user := range users {
-		if len(report.Expired)+len(report.ExpiresSoon)+len(report.ExpiresToday) > 0 {
+	if len(report.Expired)+len(report.ExpiresSoon)+len(report.ExpiresToday) > 0 {
+		for _, user := range users {
 			err = svc.email.SendEmail(user, report)
 			if err != nil {
 				log.Error().Stack().Err(&ErrSendEmail{Err: err}).Msg("")
@@ -88,6 +88,10 @@ func (svc *Service) CreateReport(goods []Good) Report {
 	var report Report
 
 	for _, good := range goods {
+		if good.Quantity == "Empty" {
+			continue
+		}
+
 		parsedDate, err := time.Parse(dateFormat, good.Expire)
 		if err != nil {
 			log.Error().Stack().Err(&ErrTimeParse{Date: good.Expire}).Msg("")

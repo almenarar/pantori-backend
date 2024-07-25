@@ -21,7 +21,7 @@ func New() *routes {
 
 func (r *routes) Expose() {
 	middlewares := middleware.New()
-	authRoutes := auth.New()
+	authRoutes := auth.NewNetworkHandler()
 	goodsRoutes := goods.New()
 	categoriesRoutes := categories.New()
 

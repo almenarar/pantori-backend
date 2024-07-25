@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 type Network struct {
@@ -32,12 +33,12 @@ func NewNetwork(svc core.ServicePort) *Network {
 func (net *Network) CreateGood(ctx *gin.Context) {
 	payload := core.PostGood{}
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/create-good")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -64,7 +65,7 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -89,12 +90,12 @@ func (net *Network) CreateGood(ctx *gin.Context) {
 func (net *Network) EditGood(ctx *gin.Context) {
 	payload := core.PatchGood{}
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/edit-good")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -125,7 +126,7 @@ func (net *Network) EditGood(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -173,7 +174,7 @@ func (net *Network) GetGood(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -222,7 +223,7 @@ func (net *Network) ListGoods(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -247,12 +248,12 @@ func (net *Network) ListGoods(ctx *gin.Context) {
 func (net *Network) DeleteGood(ctx *gin.Context) {
 	payload := core.DeleteGood{}
 	if err := ctx.ShouldBindJSON(&payload); err != nil {
-		ctx.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"error": "some of the required fields are empty",
-			},
-		)
+		log.Error().Err(err).Msg("/delete-good")
+		missingFields := formatValidationError(err)
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":  "missing or invalid fields",
+			"fields": missingFields,
+		})
 		return
 	}
 
@@ -275,7 +276,7 @@ func (net *Network) DeleteGood(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return
@@ -326,7 +327,7 @@ func (net *Network) GetShoppingList(ctx *gin.Context) {
 		ctx.JSON(
 			http.StatusInternalServerError,
 			gin.H{
-				"error": err.Error(),
+				"error": err.PublicMessage(),
 			},
 		)
 		return

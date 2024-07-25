@@ -27,7 +27,7 @@ func New() *middlewares {
 	if viper.IsSet("jwt_key") {
 		key = viper.GetString("jwt_key")
 	} else {
-		log.Panic().Stack().Err(errors.New("jwt key undefined")).Msg("")
+		log.Panic().Stack().Err(errors.New("JWT_KEY undefined")).Msg("")
 	}
 	return &middlewares{
 		jwtKey: key,

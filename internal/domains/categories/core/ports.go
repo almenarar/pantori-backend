@@ -1,11 +1,11 @@
 package core
 
 type ServicePort interface {
-	CreateDefaultCategories(workspace string) error
-	CreateCategory(Category) error
-	ListCategories(workspace string) ([]Category, error)
-	EditCategory(Category) error
-	DeleteCategory(Category) error
+	CreateDefaultCategories(workspace string) DescribedError
+	CreateCategory(Category) DescribedError
+	ListCategories(workspace string) ([]Category, DescribedError)
+	EditCategory(Category) DescribedError
+	DeleteCategory(Category) DescribedError
 }
 
 type DatabasePort interface {

@@ -1,12 +1,12 @@
 package core
 
 type ServicePort interface {
-	AddGood(Good) error
-	EditGood(Good) error
-	GetGood(Good) (Good, error)
-	ListGoods(string) ([]Good, error)
-	DeleteGood(Good) error
-	BuildShoppingList(workspace string) ([]Good, error)
+	AddGood(Good) DescribedError
+	EditGood(Good) DescribedError
+	GetGood(Good) (Good, DescribedError)
+	ListGoods(string) ([]Good, DescribedError)
+	DeleteGood(Good) DescribedError
+	BuildShoppingList(workspace string) ([]Good, DescribedError)
 }
 
 type DatabasePort interface {

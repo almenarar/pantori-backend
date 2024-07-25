@@ -35,7 +35,7 @@ func (dy *dynamo) CreateUser(user core.User) error {
 
 	av, err := attributevalue.MarshalMap(dbUser)
 	if err != nil {
-		return &ErrDataTransformFailed{Inner: err}
+		return &ErrDataTransformFailed{err}
 	}
 
 	_, err = client.PutItem(
@@ -46,7 +46,7 @@ func (dy *dynamo) CreateUser(user core.User) error {
 		},
 	)
 	if err != nil {
-		return &ErrDbOpFailed{Inner: err}
+		return &ErrDbOpFailed{err}
 	}
 	return nil
 }
@@ -61,7 +61,7 @@ func (dy *dynamo) DeleteUser(user core.User) error {
 		},
 	)
 	if err != nil {
-		return &ErrDbOpFailed{Inner: err}
+		return &ErrDbOpFailed{err}
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func (dy *dynamo) GetUser(user core.User) (core.User, error) {
 		},
 	)
 	if err != nil {
-		return core.User{}, &ErrDbOpFailed{Inner: err}
+		return core.User{}, &ErrDbOpFailed{err}
 	}
 
 	var dbUser core.UserDB
@@ -85,7 +85,7 @@ func (dy *dynamo) GetUser(user core.User) (core.User, error) {
 	} else {
 		err = attributevalue.UnmarshalMap(output.Item, &dbUser)
 		if err != nil {
-			return core.User{}, &ErrDataTransformFailed{Inner: err}
+			return core.User{}, &ErrDataTransformFailed{err}
 		}
 		user = core.User{
 			Username:       dbUser.Username,
@@ -105,7 +105,7 @@ func (dy *dynamo) ListUsers() ([]core.User, error) {
 		},
 	)
 	if err != nil {
-		return []core.User{}, &ErrDbOpFailed{Inner: err}
+		return []core.User{}, &ErrDbOpFailed{err}
 	}
 
 	response := make([]core.User, 0)
@@ -113,7 +113,7 @@ func (dy *dynamo) ListUsers() ([]core.User, error) {
 		user := core.User{}
 		err := attributevalue.UnmarshalMap(item, &user)
 		if err != nil {
-			return response, &ErrDataTransformFailed{Inner: err}
+			return response, &ErrDataTransformFailed{err}
 		}
 		response = append(response, user)
 	}

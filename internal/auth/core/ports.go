@@ -1,10 +1,10 @@
 package core
 
 type ServicePort interface {
-	Authenticate(User) (string, error)
-	CreateUser(User) error
-	DeleteUser(User) error
-	ListUsers() ([]User, error)
+	Authenticate(User) (string, DescribedError)
+	CreateUser(User) DescribedError
+	DeleteUser(User) DescribedError
+	ListUsers() ([]User, DescribedError)
 }
 
 type DatabasePort interface {

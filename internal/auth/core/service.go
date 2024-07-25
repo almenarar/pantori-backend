@@ -1,5 +1,7 @@
 package core
 
+import "github.com/rs/zerolog/log"
+
 type service struct {
 	db     DatabasePort
 	crypto CryptographyPort
@@ -14,10 +16,11 @@ func NewService(crypto CryptographyPort, db DatabasePort, utils UtilsPort) *serv
 	}
 }
 
-func (svc *service) Authenticate(input User) (string, error) {
+func (svc *service) Authenticate(input User) (string, DescribedError) {
 	user, err := svc.db.GetUser(input)
 	if err != nil {
-		return "", &ErrDbOpFailed{err}
+		log.Error().Err(&ErrGetUserFailed{err}).Msg("")
+		return "", &ErrGetUserFailed{}
 	}
 
 	if user.ActualPassword == "" {
@@ -26,17 +29,19 @@ func (svc *service) Authenticate(input User) (string, error) {
 
 	err = svc.crypto.CheckPassword(user.ActualPassword, input.GivenPassword)
 	if err != nil {
+		log.Error().Err(&ErrInvalidLoginInput{err}).Msg("")
 		return "", &ErrInvalidLoginInput{}
 	}
 
 	token, err := svc.crypto.GenerateToken(user)
 	if err != nil {
-		return "", &ErrCryptoOpFailed{err}
+		log.Error().Err(&ErrGenTokenFailed{err}).Msg("")
+		return "", &ErrGenTokenFailed{}
 	}
 	return token, nil
 }
 
-func (svc *service) CreateUser(user User) error {
+func (svc *service) CreateUser(user User) DescribedError {
 	user.CreatedAt = svc.utils.GetCurrentTime()
 
 	if user.Workspace == "" {
@@ -46,29 +51,33 @@ func (svc *service) CreateUser(user User) error {
 	var err error
 	user.GivenPassword, err = svc.crypto.EncryptPassword(user.GivenPassword)
 	if err != nil {
-		return &ErrCryptoOpFailed{err}
+		log.Error().Err(&ErrEncryptPwdFailed{err}).Msg("")
+		return &ErrEncryptPwdFailed{}
 	}
 
 	err = svc.db.CreateUser(user)
 	if err != nil {
-		return &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBCreateUserFailed{err}).Msg("")
+		return &ErrDBCreateUserFailed{}
 	}
 
 	return nil
 }
 
-func (svc *service) DeleteUser(user User) error {
+func (svc *service) DeleteUser(user User) DescribedError {
 	err := svc.db.DeleteUser(user)
 	if err != nil {
-		return &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBDeleteUserFailed{err}).Msg("")
+		return &ErrDBDeleteUserFailed{}
 	}
 	return nil
 }
 
-func (svc *service) ListUsers() ([]User, error) {
+func (svc *service) ListUsers() ([]User, DescribedError) {
 	out, err := svc.db.ListUsers()
 	if err != nil {
-		return []User{}, &ErrDbOpFailed{err}
+		log.Error().Err(&ErrDBListUserFailed{err}).Msg("")
+		return []User{}, &ErrDBListUserFailed{}
 	}
 	return out, nil
 }
