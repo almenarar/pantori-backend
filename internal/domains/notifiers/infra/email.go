@@ -142,7 +142,7 @@ func (e *email) SendEmail(user core.User, report core.Report) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", e.auth.Email)
 	m.SetHeader("To", user.Email)
-	m.SetHeader("Subject", "Alerta de Vencimento")
+	m.SetHeader("Subject", "Aviso do Pantori")
 	m.SetBody("text/html", bodyContent)
 	m.Embed("/go/bin/email_header.png")
 
